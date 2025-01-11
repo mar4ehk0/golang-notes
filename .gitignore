@@ -26,3 +26,6 @@ ehthumbs.db
 Thumbs.db
 .vscode/
 *.bak
+
+docker/database/data
+bin/
