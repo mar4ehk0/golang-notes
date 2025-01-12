@@ -5,6 +5,7 @@ import (
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"github.com/mar4ehk0/notes/pkg/service"
+	"github.com/sirupsen/logrus"
 )
 
 type Handler struct {
@@ -26,11 +27,39 @@ func New(router *gin.Engine, service *service.Service) *Handler {
 }
 
 func (h *Handler) InitRoutes() *gin.Engine {
+	h.router.GET("/", h.renderHomePage)
+
 	auth := h.router.Group("/auth")
 	{
 		auth.GET("/sign-in", h.renderFormSignIn)
 		auth.POST("/sign-in", h.processFormSignIn)
+
+		auth.GET("/sign-up", h.renderFormSignUp)
+		auth.POST("/sign-up", h.processFormSignUp)
 	}
 
 	return h.router
+}
+
+func getItemFromSession(s *sessions.Session, key string) interface{} {
+	session := *s
+
+	value := session.Get(key)
+	session.Delete(errorFormSignUp)
+	err := session.Save()
+	if err != nil {
+		logrus.Fatalf("failed get session: %s", err.Error())
+	}
+
+	return value
+}
+
+func saveItemToSession(s *sessions.Session, key string, value interface{}) {
+	session := *s
+
+	session.Set(key, value)
+	err := session.Save()
+	if err != nil {
+		logrus.Fatalf("failed get session: %s", err.Error())
+	}
 }
