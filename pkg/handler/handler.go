@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"github.com/mar4ehk0/notes/pkg/service"
 )
@@ -16,6 +18,9 @@ func New(router *gin.Engine, service *service.Service) *Handler {
 	router.Static("/img", "./static/img")
 	router.Static("/css", "./static/css")
 	router.StaticFile("/favicon.ico", "./static/img/favicon.ico")
+
+	store := cookie.NewStore([]byte("secret"))
+	router.Use(sessions.Sessions("mysession", store))
 
 	return &Handler{router: router, service: service}
 }
