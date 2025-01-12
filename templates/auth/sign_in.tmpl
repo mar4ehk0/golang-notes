@@ -1,30 +1,33 @@
 {{ define "auth/sign_in.tmpl" }}
 <!DOCTYPE html>
 <html lang="en">
-{{ template "header.tmpl"}}
-    <body class="d-flex align-items-center py-4 bg-body-tertiary">
-        <main class="form-signin w-100 m-auto">
-            <form method="post" action="/auth/sign-in"> 
-                <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
+{{ template "head.tmpl"}}
+    <body class="homepage d-flex h-100 text-center bg-body-tertiary">
+        <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
+            {{ template "header.tmpl"}}
+            <main class="form-signin w-100 m-auto">
+                <form method="post" action="/auth/sign-in"> 
+                    <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
 
-                {{ if .Error }}
-                <div class="alert alert-danger" role="alert">
-                    {{ .Error }}
-                </div>
-                {{ end }}
+                    {{ if .Error }}
+                    <div class="alert alert-danger" role="alert">
+                        {{ .Error }}
+                    </div>
+                    {{ end }}
 
-                <div class="form-floating">
-                <input name="email" type="email" class="form-control" id="floatingInput" placeholder="name@example.com" value="{{ .Email }}">
-                <label for="floatingInput">Email address</label>
-                </div>
-                <div class="form-floating">
-                <input name="password" type="password" class="form-control" id="floatingPassword" placeholder="Password">
-                <label for="floatingPassword">Password</label>
-                </div>
+                    <div class="form-floating">
+                    <input name="email" type="email" class="form-control" id="floatingInput" placeholder="name@example.com" value="{{ .Email }}">
+                    <label for="floatingInput">Email address</label>
+                    </div>
+                    <div class="form-floating">
+                    <input name="password" type="password" class="form-control" id="floatingPassword" placeholder="Password">
+                    <label for="floatingPassword">Password</label>
+                    </div>
 
-                <button class="btn btn-primary w-100 py-2" type="submit">Sign in</button>
-            </form>
-        </main>
+                    <button class="btn btn-primary w-100 py-2" type="submit">Sign in</button>
+                </form>
+            </main>
+        </div>    
     </body>
 </html>
 {{ end }}
