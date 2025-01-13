@@ -1,12 +1,12 @@
 package service
 
 import (
-	"crypto/sha1"
 	"fmt"
 
 	"github.com/mar4ehk0/notes/model"
 	"github.com/mar4ehk0/notes/pkg/dto"
 	"github.com/mar4ehk0/notes/pkg/repository"
+	"golang.org/x/crypto/bcrypt"
 )
 
 const salt = "f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6"
@@ -20,23 +20,47 @@ func NewAuthService(repo repository.Authorization) *AuthService {
 }
 
 func (s *AuthService) CreateUser(d dto.UserSingUpDto) (model.User, error) {
-	d.Password = s.generatePasswordHash(d.Password)
+	var user model.User
 
-	result := model.User{}
-	id, err := s.repo.CreateUser(d)
+	hashedPassword, err := s.generatePasswordHash(d.Password)
 	if err != nil {
-		return result, fmt.Errorf("service create user: %w", err)
+		return user, fmt.Errorf("generate password hash: %w", err)
 	}
 
-	result.ID = id
-	result.Email = d.Email
-	result.Password = d.Password
-	return result, nil
+	d.Password = hashedPassword
+
+	id, err := s.repo.CreateUser(d)
+	if err != nil {
+		return user, fmt.Errorf("repo create user: %w", err)
+	}
+
+	user.ID = id
+	user.Email = d.Email
+	user.Password = d.Password
+	return user, nil
 }
 
-func (s *AuthService) generatePasswordHash(password string) string {
-	hash := sha1.New()
-	hash.Write([]byte(password))
+func (s *AuthService) CanAuthorize(d dto.UserSingInDto) (bool, error) {
+	user, err := s.repo.GetUserByEmail(d.Email)
+	if err != nil {
+		return false, fmt.Errorf("repo get user by email: %w", err)
+	}
 
-	return fmt.Sprintf("%x", hash.Sum([]byte(salt)))
+	if s.comparePassword(user.Password, d.Password) {
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func (s *AuthService) generatePasswordHash(password string) (string, error) {
+	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+
+	return string(hashedBytes), err
+}
+
+func (s *AuthService) comparePassword(hashedPassword string, password string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+
+	return err == nil
 }

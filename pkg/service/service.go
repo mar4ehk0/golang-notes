@@ -7,7 +7,8 @@ import (
 )
 
 type Authorization interface {
-	CreateUser(user dto.UserSingUpDto) (model.User, error)
+	CreateUser(d dto.UserSingUpDto) (model.User, error)
+	CanAuthorize(d dto.UserSingInDto) (bool, error)
 }
 
 type Note interface {
