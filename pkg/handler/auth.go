@@ -7,7 +7,6 @@ import (
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/mar4ehk0/notes/model"
 	"github.com/mar4ehk0/notes/pkg/dto"
 	"github.com/mar4ehk0/notes/pkg/repository"
 	"github.com/sirupsen/logrus"
@@ -49,16 +48,18 @@ func (h *Handler) processFormSignUp(c *gin.Context) {
 
 	user, err := h.services.Authorization.CreateUser(input)
 	if err != nil {
-		logrus.Errorf("create user: %s", err.Error())
+		logrus.Errorf("process form sign-up: create user: %s", err.Error())
 
 		msg := "Something went wrong"
 		if errors.Is(err, repository.ErrDBDuplicateKey) {
 			msg = fmt.Sprintf("User already exist with same email: %s", input.Email)
 		}
+
 		saveItemToSession(&session, flashError, msg)
 		c.Redirect(http.StatusFound, "/auth/sign-up")
 		return
 	}
+
 	saveItemToSession(&session, flashInfo, fmt.Sprintf("User created - %s", user.Email))
 	c.Redirect(http.StatusFound, "/auth/sign-in")
 }
@@ -80,7 +81,7 @@ func (h *Handler) renderFormSignIn(c *gin.Context) {
 func (h *Handler) processFormSignIn(c *gin.Context) {
 	session := sessions.Default(c)
 
-	var input model.User
+	var input dto.UserSingInDto
 
 	if err := c.ShouldBind(&input); err != nil {
 		saveItemToSession(&session, flashError, "Email and Password are required")
@@ -88,11 +89,29 @@ func (h *Handler) processFormSignIn(c *gin.Context) {
 		return
 	}
 
-	session.Set(authenticated, input.Email)
-	if err := session.Save(); err != nil {
-		logrus.Errorf("sig-in: %s", err.Error())
+	v, err := h.services.Authorization.CanAuthorize(input)
+	if err != nil {
+		logrus.Errorf("process form sign-in: can authorize: %s", err.Error())
 
+		saveItemToSession(&session, flashError, "Something went wrong")
 		c.Redirect(http.StatusFound, "/auth/sign-in")
 		return
 	}
+
+	if !v {
+		saveItemToSession(&session, flashError, "Email or password wrong")
+		c.Redirect(http.StatusFound, "/auth/sign-in")
+		return
+	}
+
+	session.Set(authenticated, input.Email)
+	if err := session.Save(); err != nil {
+		logrus.Errorf("process form sign-in: save session: %s", err.Error())
+
+		saveItemToSession(&session, flashError, "Something went wrong")
+		c.Redirect(http.StatusFound, "/auth/sign-in")
+		return
+	}
+
+	c.Redirect(http.StatusFound, "/workspace/notes/create")
 }
