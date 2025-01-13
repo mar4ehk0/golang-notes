@@ -1,9 +1,19 @@
 package repository
 
 import (
+	"errors"
 	"fmt"
 
+	"github.com/jackc/pgx"
 	"github.com/jmoiron/sqlx"
+)
+
+const (
+	usersTable = "users"
+)
+
+var (
+	ErrDBDuplicateKey = errors.New("duplicate value for unique index")
 )
 
 type ConfigPostgres struct {
@@ -16,7 +26,6 @@ type ConfigPostgres struct {
 }
 
 func NewPostgresDB(c ConfigPostgres) (*sqlx.DB, error) {
-
 	dsn := fmt.Sprintf(
 		"host=%s port=%s user=%s dbname=%s sslmode=%s password=%s",
 		c.Host, c.Port, c.Username, c.DBName, c.SSLMode, c.Password,
@@ -28,4 +37,13 @@ func NewPostgresDB(c ConfigPostgres) (*sqlx.DB, error) {
 	}
 
 	return sqlxDB, err
+}
+
+func isErrDuplicate(err error) bool {
+	var pgErr pgx.PgError
+	if errors.As(err, &pgErr) {
+		return pgErr.Code == "23505"
+	}
+
+	return false
 }
