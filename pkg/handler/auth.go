@@ -113,5 +113,5 @@ func (h *Handler) processFormSignIn(c *gin.Context) {
 		return
 	}
 
-	c.Redirect(http.StatusFound, "/workspace/notes/create")
+	c.Redirect(http.StatusFound, "/workspace/notes")
 }
