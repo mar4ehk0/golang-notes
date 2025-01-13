@@ -1,0 +1,12 @@
+{{ define "message.tmpl" }}
+    {{ if .Error }}
+    <div class="alert alert-danger" role="alert">
+        {{ .Error }}
+    </div>
+    {{ end }}
+    {{ if .Info }}
+    <div class="alert alert-info" role="alert">
+        {{ .Info }}
+    </div>
+    {{ end }}
+{{ end }}

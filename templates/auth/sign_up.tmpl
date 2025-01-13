@@ -1,26 +1,30 @@
-{{ define "auth/sign_in.tmpl" }}
+{{ define "auth/sign_up.tmpl" }}
 <!DOCTYPE html>
 <html lang="en">
 {{ template "head.tmpl"}}
     <body class="homepage d-flex h-100 text-center bg-body-tertiary">
         <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
             {{ template "header.tmpl"}}
-            <main class="form-signin w-100 m-auto">
-                <form method="post" action="/auth/sign-in"> 
-                    <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
+            <main class="form-signup w-100 m-auto">
+                <form method="post" action="/auth/sign-up"> 
+                    <h1 class="h3 mb-3 fw-normal">Please sign up</h1>
 
                     {{ template "message.tmpl" . }}
 
                     <div class="form-floating">
-                    <input name="email" type="email" class="form-control" id="floatingInput" placeholder="name@example.com" value="{{ .Email }}">
+                    <input name="email" type="email" class="form-control" id="floatingInput" placeholder="name@example.com">
                     <label for="floatingInput">Email address</label>
                     </div>
                     <div class="form-floating">
                     <input name="password" type="password" class="form-control" id="floatingPassword" placeholder="Password">
                     <label for="floatingPassword">Password</label>
                     </div>
+                    <div class="form-floating">
+                    <input name="confirm_password" type="password" class="form-control" id="floatingConfirmPassword" placeholder="Confirm Password">
+                    <label for="floatingConfirmPassword">Confirm Password</label>
+                    </div>
 
-                    <button class="btn btn-primary w-100 py-2" type="submit">Sign in</button>
+                    <button class="btn btn-primary w-100 py-2" type="submit">Sign up</button>
                 </form>
             </main>
         </div>    
