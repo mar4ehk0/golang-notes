@@ -48,7 +48,8 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	workspace := h.router.Group("/workspace")
 	workspace.Use(AuthRequired)
 	{
-		workspace.GET("/notes", h.renderFormNoteCreate)
+		workspace.GET("/notes", h.renderListNote)
+		workspace.GET("/notes/create", h.renderFormNoteCreate)
 	}
 	return h.router
 }
