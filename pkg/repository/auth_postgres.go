@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/mar4ehk0/notes/model"
 	"github.com/mar4ehk0/notes/pkg/dto"
 )
 
@@ -24,10 +25,22 @@ func (r *AuthPostgres) CreateUser(user dto.UserSingUpDto) (int, error) {
 	err := row.Scan(&id)
 	if err != nil {
 		if isErrDuplicate(err) {
-			return 0, fmt.Errorf("user with same email - %s exist: %w", user.Email, ErrDBDuplicateKey)
+			return 0, fmt.Errorf("user with email - %s exist: %w", user.Email, ErrDBDuplicateKey)
 		}
 		return 0, fmt.Errorf("scan id {%s}: %w", user.Email, err)
 	}
 
 	return id, nil
+}
+
+func (r *AuthPostgres) GetUserByEmail(email string) (model.User, error) {
+	var user model.User
+
+	query := fmt.Sprintf("SELECT id, email, password FROM %s WHERE email=$1", usersTable)
+	err := r.db.QueryRowx(query, email).StructScan(&user)
+	if err != nil {
+		return user, fmt.Errorf("struct scan {%v}: %w", email, err)
+	}
+
+	return user, nil
 }
