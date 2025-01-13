@@ -1,8 +1,13 @@
 package service
 
-import "github.com/mar4ehk0/notes/pkg/repository"
+import (
+	"github.com/mar4ehk0/notes/model"
+	"github.com/mar4ehk0/notes/pkg/dto"
+	"github.com/mar4ehk0/notes/pkg/repository"
+)
 
 type Authorization interface {
+	CreateUser(user dto.UserSingUpDto) (model.User, error)
 }
 
 type Note interface {
@@ -18,5 +23,7 @@ type Service struct {
 }
 
 func NewService(repository *repository.Repository) *Service {
-	return &Service{}
+	return &Service{
+		Authorization: NewAuthService(repository),
+	}
 }
