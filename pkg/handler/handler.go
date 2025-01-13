@@ -56,8 +56,8 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 func AuthRequired(c *gin.Context) {
 	session := sessions.Default(c)
-	user := session.Get(authenticated)
-	if user == nil {
+	email := session.Get(authenticated)
+	if email == nil {
 		c.Abort()
 		return
 	}
