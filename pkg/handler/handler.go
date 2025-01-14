@@ -18,6 +18,7 @@ const (
 	flashInfo     = "Info"
 	authenticated = "authenticated"
 	sessionName   = "mysession"
+	userIdCtx     = "userId"
 )
 
 func New(router *gin.Engine, service *service.Service) *Handler {
@@ -34,8 +35,9 @@ func New(router *gin.Engine, service *service.Service) *Handler {
 }
 
 func (h *Handler) InitRoutes() *gin.Engine {
-
 	h.router.GET("/", h.renderHomePage)
+	h.router.GET("/403", h.render403)
+
 	auth := h.router.Group("/auth")
 	{
 		auth.GET("/sign-in", h.renderFormSignIn)
@@ -48,19 +50,22 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	workspace := h.router.Group("/workspace")
 	workspace.Use(AuthRequired)
 	{
-		workspace.GET("/notes", h.renderListNote)
+		workspace.GET("/notes", h.renderNoteList)
 		workspace.GET("/notes/create", h.renderFormNoteCreate)
+		workspace.POST("/notes", h.processFormNoteCreate)
+		workspace.GET("/notes/:id", h.renderNoteItem)
 	}
 	return h.router
 }
 
 func AuthRequired(c *gin.Context) {
 	session := sessions.Default(c)
-	email := session.Get(authenticated)
-	if email == nil {
+	userId := session.Get(authenticated)
+	if userId == nil {
 		c.Abort()
 		return
 	}
+	c.Set(userIdCtx, userId)
 	c.Next()
 }
 

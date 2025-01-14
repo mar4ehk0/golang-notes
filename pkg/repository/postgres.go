@@ -10,6 +10,7 @@ import (
 
 const (
 	usersTable = "users"
+	notesTable = "notes"
 )
 
 var (

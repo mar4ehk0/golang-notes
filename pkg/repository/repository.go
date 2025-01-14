@@ -12,7 +12,9 @@ type Authorization interface {
 }
 
 type Note interface {
-	CreateNote(userId int, input dto.NoteCreateDto) (model.Note, error)
+	AddNote(userID int, input dto.NoteCreateDto) (model.Note, error)
+	GetNoteByID(noteID int) (model.Note, error)
+	GetNotesByUserId(userID int) ([]model.Note, error)
 }
 
 type Tag interface {
