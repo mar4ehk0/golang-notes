@@ -89,7 +89,7 @@ func (h *Handler) processFormSignIn(c *gin.Context) {
 		return
 	}
 
-	v, err := h.services.Authorization.CanAuthorize(input)
+	user, canAuthorize, err := h.services.Authorization.Authorize(input)
 	if err != nil {
 		logrus.Errorf("process form sign-in: can authorize: %s", err.Error())
 
@@ -98,13 +98,13 @@ func (h *Handler) processFormSignIn(c *gin.Context) {
 		return
 	}
 
-	if !v {
+	if !canAuthorize {
 		saveItemToSession(&session, flashError, "Email or password wrong")
 		c.Redirect(http.StatusFound, "/auth/sign-in")
 		return
 	}
 
-	session.Set(authenticated, input.Email)
+	session.Set(authenticated, user.ID)
 	if err := session.Save(); err != nil {
 		logrus.Errorf("process form sign-in: save session: %s", err.Error())
 

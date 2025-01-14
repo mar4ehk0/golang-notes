@@ -40,17 +40,19 @@ func (s *AuthService) CreateUser(d dto.UserSingUpDto) (model.User, error) {
 	return user, nil
 }
 
-func (s *AuthService) CanAuthorize(d dto.UserSingInDto) (bool, error) {
+func (s *AuthService) Authorize(d dto.UserSingInDto) (model.User, bool, error) {
+	var user model.User
+
 	user, err := s.repo.GetUserByEmail(d.Email)
 	if err != nil {
-		return false, fmt.Errorf("repo get user by email: %w", err)
+		return user, false, fmt.Errorf("repo get user by email: %w", err)
 	}
 
 	if s.comparePassword(user.Password, d.Password) {
-		return true, nil
+		return user, true, nil
 	}
 
-	return false, nil
+	return user, false, nil
 }
 
 func (s *AuthService) generatePasswordHash(password string) (string, error) {
