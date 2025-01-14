@@ -21,9 +21,12 @@ help: ## Show this help
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z0-9_-]+:.*?## / {printf "  "${COLOR}, $$1, $$2}' ${MAKEFILE_LIST}
 
 install_deps: ## Setup install deps
+	# setup migrate 
 	curl -o /tmp/migrate.linux-amd64.tar.gz -L https://github.com/golang-migrate/migrate/releases/download/v4.18.1/migrate.linux-amd64.tar.gz
 	mkdir /tmp/golang-migrate-4.18.1 && tar fxvz /tmp/migrate.linux-amd64.tar.gz -C /tmp/golang-migrate-4.18.1
 	mv /tmp/golang-migrate-4.18.1/migrate ${PROJECT_DIR}/bin && rm -rf /tmp/golang-migrate-4.18.1 && rm -rf /tmp/migrate.linux-amd64.tar.gz 
+	# setup golangci-lint 
+	GOBIN=$(PROJECT_BIN) GOTOOLCHAIN=go1.23.4 go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.63.4
 
 migration_create: ## Migration Create name=migration_name
 	$(PROJECT_BIN)/migrate create -ext sql -dir ${MIGRATION_DIR} ${name}
@@ -44,7 +47,7 @@ down_app: ## Down app
 	docker-compose -f ./docker/docker-compose.yml --env-file ./docker/.env down -v
 
 lint: ## Run linter
-	golangci-lint run -c ../.golangci.yml
+	$(PROJECT_BIN)/golangci-lint run -c .golangci.yml
 
 # Global
 .DEFAULT_GOAL := help
