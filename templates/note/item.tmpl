@@ -1,0 +1,19 @@
+{{ define "note/item.tmpl" }}
+<!DOCTYPE html>
+<html lang="en">
+{{ template "head.tmpl"}}
+    <body class="homepage d-flex h-100 text-center bg-body-tertiary">
+        <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
+            {{ template "header_registered.tmpl"}}
+            <div class="row mt-5">
+                <div class="card">
+                    <div class="card-body">
+                        <h1 class="card-title">{{ .Title }}</h1>
+                        <p class="card-text">{{ .Body }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>    
+    </body>
+</html>
+{{ end }}
