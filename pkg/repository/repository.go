@@ -12,6 +12,7 @@ type Authorization interface {
 }
 
 type Note interface {
+	CreateNote(userId int, input dto.NoteCreateDto) (model.Note, error)
 }
 
 type Tag interface {
@@ -26,5 +27,6 @@ type Repository struct {
 func NewRepository(db *sqlx.DB) *Repository {
 	return &Repository{
 		Authorization: NewAuthPostgres(db),
+		Note:          NewNotePostgres(db),
 	}
 }
