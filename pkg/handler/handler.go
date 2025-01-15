@@ -1,6 +1,9 @@
 package handler
 
 import (
+	"net/http"
+	"strconv"
+
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -57,6 +60,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		workspace.GET("/notes/:id", h.renderNote)
 		workspace.GET("/notes/:id/update", h.renderNoteUpdate)
 		workspace.POST("/notes/:id", h.processFormNoteUpdate)
+		workspace.GET("/notes/:id/delete", h.renderNoteDelete)
 	}
 	return h.router
 }
@@ -71,6 +75,20 @@ func AuthRequired(c *gin.Context) {
 	}
 	c.Set(userIdCtx, userId)
 	c.Next()
+}
+
+func (h *Handler) getParamInt(key string, c *gin.Context) int {
+	session := sessions.Default(c)
+	param, err := strconv.Atoi(c.Param(key))
+	if err != nil {
+		logrus.Errorf("atoi: %s", err.Error())
+
+		saveItemToSession(&session, flashError, "Something went wrong")
+		c.Redirect(http.StatusFound, "/workspace/notes")
+		c.Abort()
+	}
+
+	return param
 }
 
 func getItemFromSession(s *sessions.Session, key string) interface{} {

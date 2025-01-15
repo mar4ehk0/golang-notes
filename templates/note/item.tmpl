@@ -8,7 +8,8 @@
             <div class="container mt-5">
                 {{ template "message.tmpl" . }}
                 <div class="d-flex justify-content-end mb-3">
-                    <a href="/workspace/notes/{{.ID}}/update" class="w-25 btn btn-secondary float-right" type="button">Update</a>
+                    <a href="/workspace/notes/{{.ID}}/update" class="w-25 btn btn-secondary float-right m-2" type="button">Update</a>
+                    <a href="/workspace/notes/{{.ID}}/delete" class="w-25 btn btn-danger float-right m-2" type="button">Delete</a>
                 </div>                     
                 <div class="row">
                     <h2>{{.Title}}</h2>

@@ -174,3 +174,30 @@ func (h *Handler) processFormNoteUpdate(c *gin.Context) {
 
 	c.Redirect(http.StatusFound, fmt.Sprintf("/workspace/notes/%d", noteID))
 }
+
+func (h *Handler) renderNoteDelete(c *gin.Context) {
+	session := sessions.Default(c)
+	userID := c.GetInt(userIdCtx)
+	noteID := h.getParamInt("id", c)
+
+	note, err := h.services.Note.GetNote(userID, noteID)
+	if err != nil {
+		logrus.Errorf("render note delete: get note: %s", err.Error())
+
+		checkError(err, c)
+
+		saveItemToSession(&session, flashError, "Something went wrong")
+		c.Redirect(http.StatusFound, "/workspace/notes")
+		return
+	}
+
+	errMsg := getItemFromSession(&session, flashError)
+	infoMsg := getItemFromSession(&session, flashInfo)
+
+	c.HTML(http.StatusOK, "note/delete.tmpl", gin.H{
+		"ID":    note.ID,
+		"Title": note.Title,
+		"Error": errMsg,
+		"Info":  infoMsg,
+	})
+}
