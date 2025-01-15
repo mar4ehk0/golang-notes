@@ -187,6 +187,7 @@ func (h *Handler) renderNoteDelete(c *gin.Context) {
 		checkError(err, c)
 
 		saveItemToSession(&session, flashError, "Something went wrong")
+		// создать один метод c Abort()
 		c.Redirect(http.StatusFound, "/workspace/notes")
 		return
 	}
