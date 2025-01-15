@@ -1,0 +1,30 @@
+{{ define "note/update.tmpl" }}
+<!DOCTYPE html>
+<html lang="en">
+{{ template "head.tmpl"}}
+    <body class="homepage d-flex h-100 text-center bg-body-tertiary">
+        <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
+            {{ template "header_registered.tmpl"}}
+            <div class="container mt-5">
+                {{ template "message.tmpl" . }}
+                <div class="row">
+                    <h2>Update: {{.Title}}</h2>
+                </div>   
+                <div class="d-flex justify-content-end mb-3">
+                    <a href="/workspace/notes/{{.ID}}" class="w-25 btn btn-secondary float-right" type="button">Show</a>
+                </div>                
+                <form method="post" action="/workspace/notes/{{.ID}}"> 
+                    <div class="form-group">
+                        <input name="title" type="text" class="form-control" id="title" placeholder="Title" value="{{.Title}}">
+                    </div>
+                    <div class="form-group mt-3">
+                        <textarea class="form-control" id="body" rows="3" name="body" placeholder="Body">{{.Body}}</textarea>
+                    </div>
+
+                    <button class="btn btn-primary w-25 py-2 mt-4" type="submit">Update</button>
+                </form>
+            </div>
+        </div>    
+    </body>
+</html>
+{{ end }}

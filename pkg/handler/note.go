@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -9,7 +8,6 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/mar4ehk0/notes/pkg/dto"
-	"github.com/mar4ehk0/notes/pkg/service"
 	"github.com/sirupsen/logrus"
 )
 
@@ -26,12 +24,17 @@ func (h *Handler) renderNoteList(c *gin.Context) {
 		return
 	}
 
+	errMsg := getItemFromSession(&session, flashError)
+	infoMsg := getItemFromSession(&session, flashInfo)
+
 	c.HTML(http.StatusOK, "note/list.tmpl", gin.H{
 		"Notes": notes,
+		"Error": errMsg,
+		"Info":  infoMsg,
 	})
 }
 
-func (h *Handler) renderNoteItem(c *gin.Context) {
+func (h *Handler) renderNote(c *gin.Context) {
 	session := sessions.Default(c)
 	userID := c.GetInt(userIdCtx)
 	noteID, err := strconv.Atoi(c.Param("id"))
@@ -39,7 +42,7 @@ func (h *Handler) renderNoteItem(c *gin.Context) {
 		logrus.Errorf("render note item: atoi: %s", err.Error())
 
 		saveItemToSession(&session, flashError, "Something went wrong")
-		c.Redirect(http.StatusFound, "/workspace/notes/list")
+		c.Redirect(http.StatusFound, "/workspace/notes")
 		return
 	}
 
@@ -47,23 +50,34 @@ func (h *Handler) renderNoteItem(c *gin.Context) {
 	if err != nil {
 		logrus.Errorf("render note item: get note: %s", err.Error())
 
-		if errors.Is(err, service.ErrForbidden) {
-			c.Redirect(http.StatusFound, "/403")
-			return
-		}
+		checkError(err, c)
+
 		saveItemToSession(&session, flashError, "Something went wrong")
-		c.Redirect(http.StatusFound, "/workspace/notes/list")
+		c.Redirect(http.StatusFound, "/workspace/notes")
 		return
 	}
 
+	errMsg := getItemFromSession(&session, flashError)
+	infoMsg := getItemFromSession(&session, flashInfo)
+
 	c.HTML(http.StatusOK, "note/item.tmpl", gin.H{
+		"ID":    note.ID,
 		"Title": note.Title,
 		"Body":  note.Body,
+		"Error": errMsg,
+		"Info":  infoMsg,
 	})
 }
 
 func (h *Handler) renderFormNoteCreate(c *gin.Context) {
-	c.HTML(http.StatusOK, "note/create.tmpl", gin.H{})
+	session := sessions.Default(c)
+	errMsg := getItemFromSession(&session, flashError)
+	infoMsg := getItemFromSession(&session, flashInfo)
+
+	c.HTML(http.StatusOK, "note/create.tmpl", gin.H{
+		"Error": errMsg,
+		"Info":  infoMsg,
+	})
 }
 
 func (h *Handler) processFormNoteCreate(c *gin.Context) {
@@ -71,7 +85,7 @@ func (h *Handler) processFormNoteCreate(c *gin.Context) {
 
 	userId := c.GetInt(userIdCtx)
 
-	var input dto.NoteCreateDto
+	var input dto.NoteDto
 
 	if err := c.ShouldBind(&input); err != nil {
 		saveItemToSession(&session, flashError, "Title and Body are required")
@@ -79,14 +93,84 @@ func (h *Handler) processFormNoteCreate(c *gin.Context) {
 		return
 	}
 
-	note, err := h.services.Note.CreateNote(userId, input)
+	noteID, err := h.services.Note.CreateNote(userId, input)
 	if err != nil {
-		logrus.Errorf("process form note create: %s", err.Error())
+		logrus.Errorf("process form note create: create note: %s", err.Error())
 
 		saveItemToSession(&session, flashError, "Something went wrong")
 		c.Redirect(http.StatusFound, "/workspace/note/create")
 		return
 	}
 
-	c.Redirect(http.StatusFound, fmt.Sprintf("/workspace/notes/%d", note.ID))
+	c.Redirect(http.StatusFound, fmt.Sprintf("/workspace/notes/%d", noteID))
+}
+
+func (h *Handler) renderNoteUpdate(c *gin.Context) {
+	session := sessions.Default(c)
+	userID := c.GetInt(userIdCtx)
+	noteID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		logrus.Errorf("render note item update: atoi: %s", err.Error())
+
+		saveItemToSession(&session, flashError, "Something went wrong")
+		c.Redirect(http.StatusFound, "/workspace/notes")
+		return
+	}
+
+	note, err := h.services.Note.GetNote(userID, noteID)
+	if err != nil {
+		logrus.Errorf("render note update: get note: %s", err.Error())
+
+		checkError(err, c)
+
+		saveItemToSession(&session, flashError, "Something went wrong")
+		c.Redirect(http.StatusFound, "/workspace/notes")
+		return
+	}
+
+	errMsg := getItemFromSession(&session, flashError)
+	infoMsg := getItemFromSession(&session, flashInfo)
+
+	c.HTML(http.StatusOK, "note/update.tmpl", gin.H{
+		"ID":    note.ID,
+		"Title": note.Title,
+		"Body":  note.Body,
+		"Error": errMsg,
+		"Info":  infoMsg,
+	})
+}
+
+func (h *Handler) processFormNoteUpdate(c *gin.Context) {
+	session := sessions.Default(c)
+
+	userID := c.GetInt(userIdCtx)
+	noteID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		logrus.Errorf("process note update: atoi: %s", err.Error())
+
+		saveItemToSession(&session, flashError, "Something went wrong")
+		c.Redirect(http.StatusFound, "/workspace/notes")
+		return
+	}
+
+	var input dto.NoteDto
+
+	if err := c.ShouldBind(&input); err != nil {
+		saveItemToSession(&session, flashError, "Title and Body are required")
+		c.Redirect(http.StatusFound, fmt.Sprintf("/workspace/notes/%d/update", noteID))
+		return
+	}
+
+	err = h.services.Note.UpdateNote(userID, noteID, input)
+	if err != nil {
+		logrus.Errorf("process form note update: update note: %s", err.Error())
+
+		checkError(err, c)
+
+		saveItemToSession(&session, flashError, "Something went wrong")
+		c.Redirect(http.StatusFound, fmt.Sprintf("/workspace/notes/%d/update", noteID))
+		return
+	}
+
+	c.Redirect(http.StatusFound, fmt.Sprintf("/workspace/notes/%d", noteID))
 }

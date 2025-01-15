@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
@@ -16,19 +18,18 @@ func NewNotePostgres(db *sqlx.DB) *NotePostgres {
 	return &NotePostgres{db: db}
 }
 
-func (r *NotePostgres) AddNote(userId int, input dto.NoteCreateDto) (model.Note, error) {
+func (r *NotePostgres) AddNote(userId int, input dto.NoteDto) (int, error) {
 	var id int
-	var note model.Note
 
 	query := fmt.Sprintf("INSERT INTO %s (title, body, user_id) VALUES ($1, $2, $3) RETURNING id", notesTable)
 	row := r.db.QueryRow(query, input.Title, input.Body, userId)
 
 	err := row.Scan(&id)
 	if err != nil {
-		return note, fmt.Errorf("scan id {%d %v}: %w", userId, input, err)
+		return 0, fmt.Errorf("scan id {%d %v}: %w", userId, input, err)
 	}
 
-	return model.Note{ID: id, Title: input.Title, Body: input.Body}, nil
+	return id, nil
 }
 
 func (r *NotePostgres) GetNoteByID(noteId int) (model.Note, error) {
@@ -37,6 +38,9 @@ func (r *NotePostgres) GetNoteByID(noteId int) (model.Note, error) {
 	query := fmt.Sprintf("SELECT id, title, body, user_id FROM %s WHERE id=$1", notesTable)
 	err := r.db.QueryRowx(query, noteId).StructScan(&note)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return note, NewNotFoundError("note", noteId)
+		}
 		return note, fmt.Errorf("struct scan {%v}: %w", noteId, err)
 	}
 
@@ -53,4 +57,14 @@ func (r *NotePostgres) GetNotesByUserId(userID int) ([]model.Note, error) {
 	}
 
 	return notes, nil
+}
+
+func (r *NotePostgres) UpdateNote(noteID int, d dto.NoteDto) error {
+	query := fmt.Sprintf("UPDATE %s SET title=$1, body=$2 WHERE id=$3", notesTable)
+	_, err := r.db.Exec(query, d.Title, d.Body, noteID)
+	if err != nil {
+		return fmt.Errorf("exec: %w", err)
+	}
+
+	return nil
 }

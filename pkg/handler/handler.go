@@ -37,6 +37,7 @@ func New(router *gin.Engine, service *service.Service) *Handler {
 func (h *Handler) InitRoutes() *gin.Engine {
 	h.router.GET("/", h.renderHomePage)
 	h.router.GET("/403", h.render403)
+	h.router.GET("/404", h.render404)
 
 	auth := h.router.Group("/auth")
 	{
@@ -53,7 +54,9 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		workspace.GET("/notes", h.renderNoteList)
 		workspace.GET("/notes/create", h.renderFormNoteCreate)
 		workspace.POST("/notes", h.processFormNoteCreate)
-		workspace.GET("/notes/:id", h.renderNoteItem)
+		workspace.GET("/notes/:id", h.renderNote)
+		workspace.GET("/notes/:id/update", h.renderNoteUpdate)
+		workspace.POST("/notes/:id", h.processFormNoteUpdate)
 	}
 	return h.router
 }
@@ -62,6 +65,7 @@ func AuthRequired(c *gin.Context) {
 	session := sessions.Default(c)
 	userId := session.Get(authenticated)
 	if userId == nil {
+		logrus.Errorf("userID is empty")
 		c.Abort()
 		return
 	}

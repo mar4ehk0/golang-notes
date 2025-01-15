@@ -16,13 +16,13 @@ func NewNoteService(repo repository.Note) *NoteService {
 	return &NoteService{repo: repo}
 }
 
-func (s *NoteService) CreateNote(userId int, input dto.NoteCreateDto) (model.Note, error) {
-	note, err := s.repo.AddNote(userId, input)
+func (s *NoteService) CreateNote(userId int, input dto.NoteDto) (int, error) {
+	noteID, err := s.repo.AddNote(userId, input)
 	if err != nil {
-		return model.Note{}, fmt.Errorf("repo add note: %w", err)
+		return 0, fmt.Errorf("repo add note: %w", err)
 	}
 
-	return note, nil
+	return noteID, nil
 }
 
 func (s *NoteService) GetNote(userId int, noteId int) (model.Note, error) {
@@ -31,7 +31,7 @@ func (s *NoteService) GetNote(userId int, noteId int) (model.Note, error) {
 		return model.Note{}, fmt.Errorf("repo get note by noteID{%v}: %w", noteId, err)
 	}
 	if note.UserID != userId {
-		return model.Note{}, ErrForbidden
+		return model.Note{}, NewForbiddenError(userId, noteId)
 	}
 
 	return note, nil
@@ -44,4 +44,21 @@ func (s *NoteService) GetNotes(userId int) ([]model.Note, error) {
 	}
 
 	return notes, nil
+}
+
+func (s *NoteService) UpdateNote(userID int, noteID int, input dto.NoteDto) error {
+	note, err := s.repo.GetNoteByID(noteID)
+	if err != nil {
+		return fmt.Errorf("repo get note by noteID{%v}: %w", noteID, err)
+	}
+	if note.UserID != userID {
+		return NewForbiddenError(userID, noteID)
+	}
+
+	err = s.repo.UpdateNote(noteID, input)
+	if err != nil {
+		return fmt.Errorf("repo update note by noteID{%v}: %w", noteID, err)
+	}
+
+	return nil
 }
