@@ -43,3 +43,19 @@ func (r *TagPostgres) GetTagByID(tagID int) (model.Tag, error) {
 
 	return tag, nil
 }
+
+func (r *TagPostgres) GetTagsByNoteId(noteID int) ([]model.Tag, error) {
+	tags := []model.Tag{}
+
+	query := fmt.Sprintf(
+		"SELECT t.id, t.name FROM %s as tn INNER JOIN %s as t ON t.id = tn.tag_id WHERE tn.note_id=$1",
+		tagsNotesTable,
+		tagsTable,
+	)
+	err := r.db.Select(&tags, query, noteID)
+	if err != nil {
+		return tags, fmt.Errorf("select: %w", err)
+	}
+
+	return tags, nil
+}

@@ -32,3 +32,12 @@ func (s *TagService) GetTagByID(tagID int) (model.Tag, error) {
 
 	return tag, nil
 }
+
+func (s *TagService) GetTagsByNoteId(noteID int) ([]model.Tag, error) {
+	tags, err := s.repo.GetTagsByNoteId(noteID)
+	if err != nil {
+		return make([]model.Tag, 0), fmt.Errorf("repo get tags by nodeID{%d}: %w", noteID, err)
+	}
+
+	return tags, nil
+}

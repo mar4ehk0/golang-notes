@@ -10,7 +10,14 @@
                 <div class="d-flex justify-content-end mb-3">
                     <a href="/workspace/notes/{{.ID}}/update" class="w-25 btn btn-secondary float-right m-2" type="button">Update</a>
                     <a href="/workspace/notes/{{.ID}}/delete" class="w-25 btn btn-danger float-right m-2" type="button">Delete</a>
-                </div>                     
+                </div>
+                {{if .Tags}}
+                    <div class="d-flex justify-content-end">
+                    {{range .Tags}}
+                        <span class="badge rounded-pill text-bg-info">{{.Name}}</span>
+                    {{end}}
+                    </div> 
+                {{end}}                
                 <div class="row">
                     <h2>{{.Title}}</h2>
                 </div>        

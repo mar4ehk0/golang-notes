@@ -23,6 +23,7 @@ type Note interface {
 type Tag interface {
 	GetTags() ([]model.Tag, error)
 	GetTagByID(tagID int) (model.Tag, error)
+	GetTagsByNoteId(noteID int) ([]model.Tag, error)
 }
 
 type Repository struct {

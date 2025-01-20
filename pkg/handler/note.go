@@ -57,6 +57,13 @@ func (h *Handler) renderNote(c *gin.Context) {
 		return
 	}
 
+	tags, err := h.services.Tag.GetTagsByNoteId(noteID)
+	if err != nil {
+		logrus.Errorf("render note item: get tags by node id: %s", err.Error())
+		saveItemToSession(&session, flashError, "Something went wrong")
+		c.Redirect(http.StatusFound, "/workspace/notes")
+		return
+	}
 	errMsg := getItemFromSession(&session, flashError)
 	infoMsg := getItemFromSession(&session, flashInfo)
 
@@ -66,6 +73,7 @@ func (h *Handler) renderNote(c *gin.Context) {
 		"Body":  note.Body,
 		"Error": errMsg,
 		"Info":  infoMsg,
+		"Tags":  tags,
 	})
 }
 
