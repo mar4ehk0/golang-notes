@@ -8,6 +8,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/mar4ehk0/notes/model"
 	"github.com/mar4ehk0/notes/pkg/dto"
+	"github.com/sirupsen/logrus"
 )
 
 type NotePostgres struct {
@@ -16,6 +17,48 @@ type NotePostgres struct {
 
 func NewNotePostgres(db *sqlx.DB) *NotePostgres {
 	return &NotePostgres{db: db}
+}
+
+func (r *NotePostgres) AddNoteWithTag(userId int, input dto.NoteDto) (int, error) {
+	var err error
+
+	tx, err := r.db.Begin()
+	if err != nil {
+		return 0, fmt.Errorf("begin transaction {%v}: %w", input, err)
+	}
+	defer func() {
+		var dbErr error
+		if err != nil {
+			dbErr = tx.Rollback()
+			if dbErr != nil {
+				logrus.Errorln(fmt.Errorf("transaction rollback: %w", dbErr))
+			}
+		} else {
+			dbErr = tx.Commit()
+			if dbErr != nil {
+				logrus.Errorln(fmt.Errorf("transaction commit: %w", dbErr))
+			}
+		}
+	}()
+
+	var noteID int
+
+	query := fmt.Sprintf("INSERT INTO %s (title, body, user_id) VALUES ($1, $2, $3) RETURNING id", notesTable)
+	row := tx.QueryRow(query, input.Title, input.Body, userId)
+	err = row.Scan(&noteID)
+	if err != nil {
+		err = fmt.Errorf("scan id {%d %v}: %w", userId, input, err)
+		return 0, err
+	}
+
+	query = fmt.Sprintf("INSERT INTO %s (tag_id, note_id) VALUES ($1, $2)", tagsNotesTable)
+	_, err = tx.Exec(query, input.TagID, noteID)
+	if err != nil {
+		err = fmt.Errorf("exec {%d %d %d}: %w", userId, input.TagID, noteID, err)
+		return 0, err
+	}
+
+	return noteID, nil
 }
 
 func (r *NotePostgres) AddNote(userId int, input dto.NoteDto) (int, error) {
@@ -69,7 +112,7 @@ func (r *NotePostgres) UpdateNote(noteID int, d dto.NoteDto) error {
 	return nil
 }
 
-func (r * NotePostgres) DeleteNote(noteID int) (bool, error) {
+func (r *NotePostgres) DeleteNote(noteID int) (bool, error) {
 	query := fmt.Sprintf("DELETE FROM %s WHERE id=$1", notesTable)
 	result, err := r.db.Exec(query, noteID)
 	if err != nil {

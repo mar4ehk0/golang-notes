@@ -16,6 +16,14 @@
                     <div class="form-group mt-3">
                         <textarea class="form-control" id="body" rows="3" name="body" placeholder="Body"></textarea>
                     </div>
+                    <div class="form-group mt-3">
+                        <select class="form-select" id="tag" name="tag">
+                            <option selected value="-1">Tag</option>
+                            {{range .Tags}}
+                                <option value="{{.ID}}">{{.Name}}</option>
+                            {{end}}
+                        </select>
+                    </div>
 
                     <button class="btn btn-primary w-100 py-2 mt-4" type="submit">Create</button>
                 </form>

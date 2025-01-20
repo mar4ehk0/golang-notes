@@ -74,9 +74,19 @@ func (h *Handler) renderFormNoteCreate(c *gin.Context) {
 	errMsg := getItemFromSession(&session, flashError)
 	infoMsg := getItemFromSession(&session, flashInfo)
 
+	tags, err := h.services.Tag.GetTags()
+	if err != nil {
+		logrus.Errorf("render form note create: get tags: %s", err.Error())
+
+		saveItemToSession(&session, flashError, "Something went wrong")
+		c.Redirect(http.StatusFound, "/workspace/notes")
+		return
+	}
+
 	c.HTML(http.StatusOK, "note/create.tmpl", gin.H{
 		"Error": errMsg,
 		"Info":  infoMsg,
+		"Tags":  tags,
 	})
 }
 
@@ -88,17 +98,18 @@ func (h *Handler) processFormNoteCreate(c *gin.Context) {
 	var input dto.NoteDto
 
 	if err := c.ShouldBind(&input); err != nil {
-		saveItemToSession(&session, flashError, "Title and Body are required")
+		saveItemToSession(&session, flashError, "Title, Body and Tag are required")
 		c.Redirect(http.StatusFound, "/workspace/note/create")
 		return
 	}
+	logrus.Printf("%v \n", input)
 
 	noteID, err := h.services.Note.CreateNote(userId, input)
 	if err != nil {
 		logrus.Errorf("process form note create: create note: %s", err.Error())
 
 		saveItemToSession(&session, flashError, "Something went wrong")
-		c.Redirect(http.StatusFound, "/workspace/note/create")
+		c.Redirect(http.StatusFound, "/workspace/notes/create")
 		return
 	}
 

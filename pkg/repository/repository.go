@@ -13,6 +13,7 @@ type Authorization interface {
 
 type Note interface {
 	AddNote(userID int, input dto.NoteDto) (int, error)
+	AddNoteWithTag(userID int, input dto.NoteDto) (int, error)
 	GetNoteByID(noteID int) (model.Note, error)
 	GetNotesByUserId(userID int) ([]model.Note, error)
 	UpdateNote(noteID int, input dto.NoteDto) error
@@ -20,6 +21,8 @@ type Note interface {
 }
 
 type Tag interface {
+	GetTags() ([]model.Tag, error)
+	GetTagByID(tagID int) (model.Tag, error)
 }
 
 type Repository struct {
@@ -32,5 +35,6 @@ func NewRepository(db *sqlx.DB) *Repository {
 	return &Repository{
 		Authorization: NewAuthPostgres(db),
 		Note:          NewNotePostgres(db),
+		Tag:           NewTagPostgres(db),
 	}
 }

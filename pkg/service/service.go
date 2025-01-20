@@ -16,10 +16,12 @@ type Note interface {
 	GetNote(userID int, noteId int) (model.Note, error)
 	GetNotes(userID int) ([]model.Note, error)
 	UpdateNote(userID int, noteID int, input dto.NoteDto) error
-	DeleteNote(userID int, noteID int) (error)
+	DeleteNote(userID int, noteID int) error
 }
 
 type Tag interface {
+	GetTags() ([]model.Tag, error)
+	GetTagByID(tagID int) (model.Tag, error)
 }
 
 type Service struct {
@@ -32,5 +34,6 @@ func NewService(repository *repository.Repository) *Service {
 	return &Service{
 		Authorization: NewAuthService(repository),
 		Note:          NewNoteService(repository),
+		Tag:           NewTagService(repository),
 	}
 }

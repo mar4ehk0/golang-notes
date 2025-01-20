@@ -11,6 +11,8 @@ import (
 const (
 	usersTable = "users"
 	notesTable = "notes"
+	tagsTable = "tags"
+	tagsNotesTable = "tags_notes"
 )
 
 var (
