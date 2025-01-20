@@ -16,15 +16,17 @@
                     <div class="form-group mt-3">
                         <textarea class="form-control" id="body" rows="3" name="body" placeholder="Body"></textarea>
                     </div>
-                    <div class="form-group mt-3">
-                        <select class="form-select" id="tag" name="tag">
-                            <option selected value="-1">Tag</option>
-                            {{range .Tags}}
-                                <option value="{{.ID}}">{{.Name}}</option>
-                            {{end}}
-                        </select>
-                    </div>
-
+                    <div class="row form-group mt-5 justify-content-end">
+                        <h5>Tags</h5>
+                        <div class="d-flex flex-row flex-wrap">
+                        {{range .Tags}}
+                            <div class="form-check mb-2">
+                                <input class="form-check-input d-none" type="checkbox" value="{{.ID}}" id="tag-{{.ID}}">
+                                <label class="form-check-label badge rounded-pill text-bg-info" for="tag-{{.ID}}">{{.Name}}</label>
+                            </div>
+                        {{end}}
+                        </div> 
+                    </div>    
                     <button class="btn btn-primary w-100 py-2 mt-4" type="submit">Create</button>
                 </form>
             </div>
