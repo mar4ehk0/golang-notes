@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX tags_notes_unique ON public.tags_notes (tag_id,note_id);
