@@ -37,6 +37,12 @@ migration_up: ## Migration Up
 migration_down: ## Migration Down
 	$(PROJECT_BIN)/migrate -path ${MIGRATION_DIR} -database ${MIGRATION_DSN} down
 
+migration_force: ## Migration Force version=20250120130543
+	$(PROJECT_BIN)/migrate -path ${MIGRATION_DIR} -database ${MIGRATION_DSN} force ${version}
+
+migration_version: ## Migration Version
+	$(PROJECT_BIN)/migrate -path ${MIGRATION_DIR} -database ${MIGRATION_DSN} version
+
 build_app: ## Build app
 	docker-compose -f ./docker/docker-compose.yml --env-file ./docker/.env build
 

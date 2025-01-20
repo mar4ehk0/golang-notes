@@ -1,0 +1,25 @@
+DELETE FROM tags
+WHERE name IN (
+    'Work',
+    'Study',
+    'Personal',
+    'Ideas',
+    'Shopping',
+    'Plans',
+    'Recipes',
+    'Travel',
+    'Finance',
+    'Health',
+    'Sports',
+    'Books',
+    'Movies',
+    'Music',
+    'Tasks',
+    'Urgent',
+    'Important',
+    'Other',
+    'Goals',
+    'Family',
+    'Friends',
+    'Gifts'
+);
