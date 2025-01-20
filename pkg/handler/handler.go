@@ -61,6 +61,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		workspace.GET("/notes/:id/update", h.renderNoteUpdate)
 		workspace.POST("/notes/:id", h.processFormNoteUpdate)
 		workspace.GET("/notes/:id/delete", h.renderNoteDelete)
+		workspace.POST("/notes/:id/delete", h.processNoteDelete)
 	}
 	return h.router
 }

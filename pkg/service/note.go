@@ -62,3 +62,24 @@ func (s *NoteService) UpdateNote(userID int, noteID int, input dto.NoteDto) erro
 
 	return nil
 }
+
+func (s *NoteService) DeleteNote(userID int, noteID int) error {
+	note, err := s.repo.GetNoteByID(noteID)
+	if err != nil {
+		return fmt.Errorf("repo get note by noteID{%v}: %w", noteID, err)
+	}
+	if note.UserID != userID {
+		return NewForbiddenError(userID, noteID)
+	}
+
+	isDeleted, err := s.repo.DeleteNote(noteID)
+	if err != nil {
+		return fmt.Errorf("repo delete note by noteID{%v}: %w", noteID, err)
+	}
+
+	if !isDeleted {
+		return fmt.Errorf("does not delete note by noteID{%v}: %w", noteID, err)
+	}
+
+	return nil
+}

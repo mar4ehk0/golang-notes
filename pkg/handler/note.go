@@ -202,3 +202,23 @@ func (h *Handler) renderNoteDelete(c *gin.Context) {
 		"Info":  infoMsg,
 	})
 }
+
+func (h *Handler) processNoteDelete(c *gin.Context) {
+	session := sessions.Default(c)
+	userID := c.GetInt(userIdCtx)
+	noteID := h.getParamInt("id", c)
+
+	err := h.services.Note.DeleteNote(userID, noteID)
+	if err != nil {
+		logrus.Errorf("process form note delete: delete note: %s", err.Error())
+
+		checkError(err, c)
+
+		saveItemToSession(&session, flashError, "Something went wrong")
+		c.Redirect(http.StatusFound, fmt.Sprintf("/workspace/notes/%d/delete", noteID))
+		return
+	}
+
+	saveItemToSession(&session, flashInfo, fmt.Sprintf("note: %d was delete", noteID))
+	c.Redirect(http.StatusFound, "/workspace/notes")
+}

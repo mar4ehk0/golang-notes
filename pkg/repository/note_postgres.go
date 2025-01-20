@@ -68,3 +68,18 @@ func (r *NotePostgres) UpdateNote(noteID int, d dto.NoteDto) error {
 
 	return nil
 }
+
+func (r * NotePostgres) DeleteNote(noteID int) (bool, error) {
+	query := fmt.Sprintf("DELETE FROM %s WHERE id=$1", notesTable)
+	result, err := r.db.Exec(query, noteID)
+	if err != nil {
+		return false, fmt.Errorf("exec: %w", err)
+	}
+
+	countDeleted, err := result.RowsAffected()
+	if err != nil {
+		return false, fmt.Errorf("get rows affected: %w", err)
+	}
+
+	return countDeleted > 0, nil
+}
