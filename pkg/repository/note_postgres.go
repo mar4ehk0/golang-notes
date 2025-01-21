@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/mar4ehk0/notes/model"
@@ -27,16 +28,14 @@ func (r *NotePostgres) AddNoteWithTag(userId int, input dto.NoteDto) (int, error
 		return 0, fmt.Errorf("begin transaction {%v}: %w", input, err)
 	}
 	defer func() {
-		var dbErr error
 		if err != nil {
-			dbErr = tx.Rollback()
-			if dbErr != nil {
-				logrus.Errorln(fmt.Errorf("transaction rollback: %w", dbErr))
+			if rbErr := tx.Rollback(); rbErr != nil {
+				logrus.Errorf("transaction rollback error: %v", rbErr)
 			}
 		} else {
-			dbErr = tx.Commit()
-			if dbErr != nil {
-				logrus.Errorln(fmt.Errorf("transaction commit: %w", dbErr))
+			if cmtErr := tx.Commit(); cmtErr != nil {
+				logrus.Errorf("transaction commit error: %v", cmtErr)
+				err = cmtErr
 			}
 		}
 	}()
@@ -51,11 +50,20 @@ func (r *NotePostgres) AddNoteWithTag(userId int, input dto.NoteDto) (int, error
 		return 0, err
 	}
 
-	query = fmt.Sprintf("INSERT INTO %s (tag_id, note_id) VALUES ($1, $2)", tagsNotesTable)
-	_, err = tx.Exec(query, input.TagID, noteID)
+	dto := dto.NewTagsNotesForNote(input.TagsID, noteID)
+
+	query = fmt.Sprintf("INSERT INTO %s (tag_id, note_id) VALUES ", tagsNotesTable)
+	placeholders := make([]string, 0)
+	values := make([]interface{}, 0)
+	for i, v := range dto {
+		placeholders = append(placeholders, fmt.Sprintf("($%d, $%d)", i*2+1, i*2+2))
+		values = append(values, v.TagID, v.NoteID)
+	}
+	query += strings.Join(placeholders, ",")
+
+	_, err = tx.Exec(query, values...)
 	if err != nil {
-		err = fmt.Errorf("exec {%d %d %d}: %w", userId, input.TagID, noteID, err)
-		return 0, err
+		return 0, fmt.Errorf("exec: %w", err)
 	}
 
 	return noteID, nil

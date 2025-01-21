@@ -21,7 +21,7 @@
                         <div class="d-flex flex-row flex-wrap">
                         {{range .Tags}}
                             <div class="form-check mb-2">
-                                <input class="form-check-input d-none" type="checkbox" value="{{.ID}}" id="tag-{{.ID}}">
+                                <input class="form-check-input" type="checkbox" value="{{.ID}}" id="tag-{{.ID}}" name="tags_id[]">
                                 <label class="form-check-label badge rounded-pill text-bg-info" for="tag-{{.ID}}">{{.Name}}</label>
                             </div>
                         {{end}}

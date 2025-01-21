@@ -60,12 +60,12 @@ func (h *Handler) renderNote(c *gin.Context) {
 	tags, err := h.services.Tag.GetTagsByNoteId(noteID)
 	if err != nil {
 		logrus.Errorf("render note item: get tags by node id: %s", err.Error())
-		
+
 		saveItemToSession(&session, flashError, "Something went wrong")
 		c.Redirect(http.StatusFound, "/workspace/notes")
 		return
 	}
-	
+
 	errMsg := getItemFromSession(&session, flashError)
 	infoMsg := getItemFromSession(&session, flashInfo)
 
@@ -108,11 +108,12 @@ func (h *Handler) processFormNoteCreate(c *gin.Context) {
 	var input dto.NoteDto
 
 	if err := c.ShouldBind(&input); err != nil {
-		saveItemToSession(&session, flashError, "Title, Body and Tag are required")
-		c.Redirect(http.StatusFound, "/workspace/note/create")
+		logrus.Printf("%v \n", err)
+		
+		saveItemToSession(&session, flashError, "Title and Body are required")
+		c.Redirect(http.StatusFound, "/workspace/notes/create")
 		return
 	}
-	logrus.Printf("%v \n", input)
 
 	noteID, err := h.services.Note.CreateNote(userId, input)
 	if err != nil {

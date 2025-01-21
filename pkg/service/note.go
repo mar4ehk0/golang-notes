@@ -20,15 +20,15 @@ func (s *NoteService) CreateNote(userId int, input dto.NoteDto) (int, error) {
 	var noteID int
 	var err error
 
-	if model.DefaultTagId == input.TagID {
-		noteID, err = s.repo.AddNote(userId, input)
-		if err != nil {
-			return 0, fmt.Errorf("repo add note: %w", err)
-		}
-	} else {
+	if len(input.TagsID) > 0 {
 		noteID, err = s.repo.AddNoteWithTag(userId, input)
 		if err != nil {
 			return 0, fmt.Errorf("repo add note with tag: %w", err)
+		}
+	} else {
+		noteID, err = s.repo.AddNote(userId, input)
+		if err != nil {
+			return 0, fmt.Errorf("repo add note: %w", err)
 		}
 	}
 
