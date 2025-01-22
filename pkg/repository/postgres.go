@@ -9,9 +9,9 @@ import (
 )
 
 const (
-	usersTable = "users"
-	notesTable = "notes"
-	tagsTable = "tags"
+	usersTable     = "users"
+	notesTable     = "notes"
+	tagsTable      = "tags"
 	tagsNotesTable = "tags_notes"
 )
 
