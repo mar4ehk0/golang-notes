@@ -35,10 +35,10 @@ func (s *TagService) GetTagsWithTaggedByNoteID(noteID int) ([]dto.TagsWithTagged
 			tagged = false
 			if tag.ID == tagForNote.ID {
 				tagged = true
+				break
 			}
-
-			tagsTagged = append(tagsTagged, *dto.NewTagsWithTagged(tag, tagged))
 		}
+		tagsTagged = append(tagsTagged, *dto.NewTagsWithTagged(tag, tagged))
 	}
 
 	return tagsTagged, nil
