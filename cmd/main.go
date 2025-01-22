@@ -1,7 +1,10 @@
 package main
 
 import (
+	"context"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/jackc/pgx/stdlib"
@@ -42,7 +45,24 @@ func main() {
 	handler := handler.New(router, service)
 
 	srv := notes.Server{}
-	if err := srv.Run(os.Getenv("SERVER_PORT"), handler.InitRoutes()); err != nil {
-		logrus.Fatalf("error occurred while running http server: %s", err.Error())
+
+	go func() {
+		if err := srv.Run(os.Getenv("SERVER_PORT"), handler.InitRoutes()); err != nil {
+			logrus.Fatalf("error occurred while running http server: %s", err.Error())
+		}
+	}()
+
+	logrus.Println("started")
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+	<-quit
+
+	logrus.Println("shutdown")
+
+	srv.Shutdown(context.Background())
+
+	if err := db.Close(); err != nil {
+		logrus.Errorf("error occurred on db connection close: %s", err.Error())
 	}
 }
