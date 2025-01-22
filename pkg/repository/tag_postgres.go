@@ -44,7 +44,7 @@ func (r *TagPostgres) GetTagByID(tagID int) (model.Tag, error) {
 	return tag, nil
 }
 
-func (r *TagPostgres) GetTagsByNoteId(noteID int) ([]model.Tag, error) {
+func (r *TagPostgres) GetTagsByNoteID(noteID int) ([]model.Tag, error) {
 	tags := []model.Tag{}
 
 	query := fmt.Sprintf(

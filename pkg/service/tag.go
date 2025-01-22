@@ -22,7 +22,7 @@ func (s *TagService) GetTagsWithTaggedByNoteID(noteID int) ([]dto.TagsWithTagged
 		return []dto.TagsWithTagged{}, fmt.Errorf("repo get tags: %w", err)
 	}
 
-	tagsForNote, err := s.GetTagsByNoteId(noteID)
+	tagsForNote, err := s.GetTagsByNoteID(noteID)
 	if err != nil {
 		return []dto.TagsWithTagged{}, fmt.Errorf("repo get tags by nodeID{%d}: %w", noteID, err)
 	}
@@ -62,8 +62,8 @@ func (s *TagService) GetTagByID(tagID int) (model.Tag, error) {
 	return tag, nil
 }
 
-func (s *TagService) GetTagsByNoteId(noteID int) ([]model.Tag, error) {
-	tags, err := s.repo.GetTagsByNoteId(noteID)
+func (s *TagService) GetTagsByNoteID(noteID int) ([]model.Tag, error) {
+	tags, err := s.repo.GetTagsByNoteID(noteID)
 	if err != nil {
 		return make([]model.Tag, 0), fmt.Errorf("repo get tags by nodeID{%d}: %w", noteID, err)
 	}

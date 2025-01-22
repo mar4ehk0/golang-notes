@@ -22,7 +22,7 @@ type Note interface {
 type Tag interface {
 	GetTags() ([]model.Tag, error)
 	GetTagByID(tagID int) (model.Tag, error)
-	GetTagsByNoteId(noteID int) ([]model.Tag, error)
+	GetTagsByNoteID(noteID int) ([]model.Tag, error)
 	GetTagsWithTaggedByNoteID(noteID int) ([]dto.TagsWithTagged, error)
 }
 

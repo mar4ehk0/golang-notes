@@ -57,7 +57,7 @@ func (h *Handler) renderNote(c *gin.Context) {
 		return
 	}
 
-	tags, err := h.services.Tag.GetTagsByNoteId(noteID)
+	tags, err := h.services.Tag.GetTagsByNoteID(noteID)
 	if err != nil {
 		logrus.Errorf("render note item: get tags by node id: %s", err.Error())
 
