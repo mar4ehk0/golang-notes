@@ -127,7 +127,7 @@ func (h *Handler) processFormNoteCreate(c *gin.Context) {
 	c.Redirect(http.StatusFound, fmt.Sprintf("/workspace/notes/%d", noteID))
 }
 
-func (h *Handler) renderNoteUpdate(c *gin.Context) {
+func (h *Handler) renderFormNoteUpdate(c *gin.Context) {
 	session := sessions.Default(c)
 	userID := c.GetInt(userIdCtx)
 	noteID, err := strconv.Atoi(c.Param("id"))
@@ -150,6 +150,16 @@ func (h *Handler) renderNoteUpdate(c *gin.Context) {
 		return
 	}
 
+	tags, err := h.services.Tag.GetTagsWithTaggedByNoteID(noteID)
+	if err != nil {
+		logrus.Errorf("render form note update: get tags with tagged by note id: %s", err.Error())
+
+		saveItemToSession(&session, flashError, "Something went wrong")
+		c.Redirect(http.StatusFound, "/workspace/notes")
+		return
+	}
+
+
 	errMsg := getItemFromSession(&session, flashError)
 	infoMsg := getItemFromSession(&session, flashInfo)
 
@@ -159,6 +169,7 @@ func (h *Handler) renderNoteUpdate(c *gin.Context) {
 		"Body":  note.Body,
 		"Error": errMsg,
 		"Info":  infoMsg,
+		"Tags":  tags,
 	})
 }
 
