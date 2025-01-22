@@ -109,7 +109,7 @@ func (h *Handler) processFormNoteCreate(c *gin.Context) {
 
 	if err := c.ShouldBind(&input); err != nil {
 		logrus.Printf("%v \n", err)
-		
+
 		saveItemToSession(&session, flashError, "Title and Body are required")
 		c.Redirect(http.StatusFound, "/workspace/notes/create")
 		return
@@ -158,7 +158,6 @@ func (h *Handler) renderFormNoteUpdate(c *gin.Context) {
 		c.Redirect(http.StatusFound, "/workspace/notes")
 		return
 	}
-
 
 	errMsg := getItemFromSession(&session, flashError)
 	infoMsg := getItemFromSession(&session, flashInfo)

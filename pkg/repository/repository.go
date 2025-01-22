@@ -17,6 +17,7 @@ type Note interface {
 	GetNoteByID(noteID int) (model.Note, error)
 	GetNotesByUserId(userID int) ([]model.Note, error)
 	UpdateNote(noteID int, input dto.NoteDto) error
+	UpdateNoteWithTag(noteID int, input dto.NoteDto) error
 	DeleteNote(noteID int) (bool, error)
 }
 

@@ -50,18 +50,7 @@ func (r *NotePostgres) AddNoteWithTag(userId int, input dto.NoteDto) (int, error
 		return 0, err
 	}
 
-	dto := dto.NewTagsNotesForNote(input.TagsID, noteID)
-
-	query = fmt.Sprintf("INSERT INTO %s (tag_id, note_id) VALUES ", tagsNotesTable)
-	placeholders := make([]string, 0)
-	values := make([]interface{}, 0)
-	for i, v := range dto {
-		placeholders = append(placeholders, fmt.Sprintf("($%d, $%d)", i*2+1, i*2+2))
-		values = append(values, v.TagID, v.NoteID)
-	}
-	query += strings.Join(placeholders, ",")
-
-	_, err = tx.Exec(query, values...)
+	err = r.addTagNoteTx(tx, input.TagsID, noteID)
 	if err != nil {
 		return 0, fmt.Errorf("exec: %w", err)
 	}
@@ -120,6 +109,41 @@ func (r *NotePostgres) UpdateNote(noteID int, d dto.NoteDto) error {
 	return nil
 }
 
+func (r *NotePostgres) UpdateNoteWithTag(noteID int, d dto.NoteDto) error {
+	tx, err := r.db.Begin()
+	if err != nil {
+		return fmt.Errorf("begin transaction {%v}: %w", d, err)
+	}
+	defer func() {
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				logrus.Errorf("transaction rollback error: %v", rbErr)
+			}
+		} else {
+			if cmtErr := tx.Commit(); cmtErr != nil {
+				logrus.Errorf("transaction commit error: %v", cmtErr)
+				err = cmtErr
+			}
+		}
+	}()
+
+	query := fmt.Sprintf("UPDATE %s SET title=$1, body=$2 WHERE id=$3", notesTable)
+	_, err = tx.Exec(query, d.Title, d.Body, noteID)
+	if err != nil {
+		return fmt.Errorf("update %s exec: %w", notesTable, err)
+	}
+
+	query = fmt.Sprintf("DELETE FROM %s WHERE note_id=$1", tagsNotesTable)
+	_, err = tx.Exec(query, noteID)
+
+	err = r.addTagNoteTx(tx, d.TagsID, noteID)
+	if err != nil {
+		return fmt.Errorf("add %s exec: %w", tagsNotesTable, err)
+	}
+
+	return nil
+}
+
 func (r *NotePostgres) DeleteNote(noteID int) (bool, error) {
 	query := fmt.Sprintf("DELETE FROM %s WHERE id=$1", notesTable)
 	result, err := r.db.Exec(query, noteID)
@@ -133,4 +157,24 @@ func (r *NotePostgres) DeleteNote(noteID int) (bool, error) {
 	}
 
 	return countDeleted > 0, nil
+}
+
+func (r *NotePostgres) addTagNoteTx(tx *sql.Tx, tagsID []int, noteID int) error {
+	dto := dto.NewTagsNotesForNote(tagsID, noteID)
+
+	query := fmt.Sprintf("INSERT INTO %s (tag_id, note_id) VALUES ", tagsNotesTable)
+	placeholders := make([]string, 0)
+	values := make([]interface{}, 0)
+	for i, v := range dto {
+		placeholders = append(placeholders, fmt.Sprintf("($%d, $%d)", i*2+1, i*2+2))
+		values = append(values, v.TagID, v.NoteID)
+	}
+	query += strings.Join(placeholders, ",")
+
+	_, err := tx.Exec(query, values...)
+	if err != nil {
+		return fmt.Errorf("exec: %w", err)
+	}
+
+	return nil
 }
