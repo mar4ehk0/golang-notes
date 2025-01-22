@@ -13,7 +13,7 @@ import (
 
 func (h *Handler) renderNoteList(c *gin.Context) {
 	session := sessions.Default(c)
-	userID := c.GetInt(userIdCtx)
+	userID := c.GetInt(userIDCtx)
 
 	notes, err := h.services.Note.GetNotes(userID)
 	if err != nil {
@@ -36,7 +36,7 @@ func (h *Handler) renderNoteList(c *gin.Context) {
 
 func (h *Handler) renderNote(c *gin.Context) {
 	session := sessions.Default(c)
-	userID := c.GetInt(userIdCtx)
+	userID := c.GetInt(userIDCtx)
 	noteID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		logrus.Errorf("render note item: atoi: %s", err.Error())
@@ -103,7 +103,7 @@ func (h *Handler) renderFormNoteCreate(c *gin.Context) {
 func (h *Handler) processFormNoteCreate(c *gin.Context) {
 	session := sessions.Default(c)
 
-	userId := c.GetInt(userIdCtx)
+	userID := c.GetInt(userIDCtx)
 
 	var input dto.NoteDto
 
@@ -115,7 +115,7 @@ func (h *Handler) processFormNoteCreate(c *gin.Context) {
 		return
 	}
 
-	noteID, err := h.services.Note.CreateNote(userId, input)
+	noteID, err := h.services.Note.CreateNote(userID, input)
 	if err != nil {
 		logrus.Errorf("process form note create: create note: %s", err.Error())
 
@@ -129,7 +129,7 @@ func (h *Handler) processFormNoteCreate(c *gin.Context) {
 
 func (h *Handler) renderFormNoteUpdate(c *gin.Context) {
 	session := sessions.Default(c)
-	userID := c.GetInt(userIdCtx)
+	userID := c.GetInt(userIDCtx)
 	noteID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		logrus.Errorf("render note item update: atoi: %s", err.Error())
@@ -175,7 +175,7 @@ func (h *Handler) renderFormNoteUpdate(c *gin.Context) {
 func (h *Handler) processFormNoteUpdate(c *gin.Context) {
 	session := sessions.Default(c)
 
-	userID := c.GetInt(userIdCtx)
+	userID := c.GetInt(userIDCtx)
 	noteID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		logrus.Errorf("process note update: atoi: %s", err.Error())
@@ -209,7 +209,7 @@ func (h *Handler) processFormNoteUpdate(c *gin.Context) {
 
 func (h *Handler) renderNoteDelete(c *gin.Context) {
 	session := sessions.Default(c)
-	userID := c.GetInt(userIdCtx)
+	userID := c.GetInt(userIDCtx)
 	noteID := h.getParamInt("id", c)
 
 	note, err := h.services.Note.GetNote(userID, noteID)
@@ -237,7 +237,7 @@ func (h *Handler) renderNoteDelete(c *gin.Context) {
 
 func (h *Handler) processNoteDelete(c *gin.Context) {
 	session := sessions.Default(c)
-	userID := c.GetInt(userIdCtx)
+	userID := c.GetInt(userIDCtx)
 	noteID := h.getParamInt("id", c)
 
 	err := h.services.Note.DeleteNote(userID, noteID)

@@ -21,7 +21,7 @@ const (
 	flashInfo     = "Info"
 	authenticated = "authenticated"
 	sessionName   = "mysession"
-	userIdCtx     = "userId"
+	userIDCtx     = "userId"
 )
 
 func New(router *gin.Engine, service *service.Service) *Handler {
@@ -68,13 +68,13 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 func AuthRequired(c *gin.Context) {
 	session := sessions.Default(c)
-	userId := session.Get(authenticated)
-	if userId == nil {
+	userID := session.Get(authenticated)
+	if userID == nil {
 		logrus.Errorf("userID is empty")
 		c.Abort()
 		return
 	}
-	c.Set(userIdCtx, userId)
+	c.Set(userIDCtx, userID)
 	c.Next()
 }
 
