@@ -30,19 +30,19 @@ func (h *Handler) renderFormSignUp(c *gin.Context) {
 
 func (h *Handler) processFormSignUp(c *gin.Context) {
 	session := sessions.Default(c)
-
+	urlRedirect := urlSignUp
 	var input dto.UserSingUpDto
 
 	if err := c.ShouldBind(&input); err != nil {
 		saveItemToSession(&session, flashError, "All fields are required.")
-		c.Redirect(http.StatusFound, "/auth/sign-up")
+		c.Redirect(http.StatusFound, urlRedirect)
 		return
 	}
 
 	err := input.Validate()
 	if err != nil {
 		saveItemToSession(&session, flashError, err.Error())
-		c.Redirect(http.StatusFound, "/auth/sign-up")
+		c.Redirect(http.StatusFound, urlRedirect)
 		return
 	}
 
@@ -56,12 +56,12 @@ func (h *Handler) processFormSignUp(c *gin.Context) {
 		}
 
 		saveItemToSession(&session, flashError, msg)
-		c.Redirect(http.StatusFound, "/auth/sign-up")
+		c.Redirect(http.StatusFound, urlRedirect)
 		return
 	}
 
-	saveItemToSession(&session, flashInfo, fmt.Sprintf("User created - %s", user.Email))
-	c.Redirect(http.StatusFound, "/auth/sign-in")
+	saveItemToSession(&session, flashInfo, fmt.Sprintf("User created: %s", user.Email))
+	c.Redirect(http.StatusFound, urlSignIn)
 }
 
 func (h *Handler) renderFormSignIn(c *gin.Context) {
@@ -80,12 +80,12 @@ func (h *Handler) renderFormSignIn(c *gin.Context) {
 
 func (h *Handler) processFormSignIn(c *gin.Context) {
 	session := sessions.Default(c)
-
+	urlRedirect := urlSignUp
 	var input dto.UserSingInDto
 
 	if err := c.ShouldBind(&input); err != nil {
 		saveItemToSession(&session, flashError, "Email and Password are required")
-		c.Redirect(http.StatusFound, "/auth/sign-in")
+		c.Redirect(http.StatusFound, urlRedirect)
 		return
 	}
 
@@ -94,13 +94,13 @@ func (h *Handler) processFormSignIn(c *gin.Context) {
 		logrus.Errorf("process form sign-in: can authorize: %s", err.Error())
 
 		saveItemToSession(&session, flashError, "Something went wrong")
-		c.Redirect(http.StatusFound, "/auth/sign-in")
+		c.Redirect(http.StatusFound, urlRedirect)
 		return
 	}
 
 	if !canAuthorize {
 		saveItemToSession(&session, flashError, "Email or password wrong")
-		c.Redirect(http.StatusFound, "/auth/sign-in")
+		c.Redirect(http.StatusFound, urlRedirect)
 		return
 	}
 
@@ -109,9 +109,9 @@ func (h *Handler) processFormSignIn(c *gin.Context) {
 		logrus.Errorf("process form sign-in: save session: %s", err.Error())
 
 		saveItemToSession(&session, flashError, "Something went wrong")
-		c.Redirect(http.StatusFound, "/auth/sign-in")
+		c.Redirect(http.StatusFound, urlRedirect)
 		return
 	}
 
-	c.Redirect(http.StatusFound, "/workspace/notes")
+	c.Redirect(http.StatusFound, urlNotes)
 }
