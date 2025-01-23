@@ -50,7 +50,7 @@ func New(router *gin.Engine, service *service.Service) *Handler {
 	router.StaticFile("/favicon.ico", "./static/img/favicon.ico")
 
 	store := cookie.NewStore([]byte("secret"))
-      router.Use(sessions.Sessions(sessionName, store))
+       router.Use(sessions.Sessions(sessionName, store))
 
 	return &Handler{router: router, services: service}
 }
