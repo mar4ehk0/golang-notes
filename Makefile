@@ -53,7 +53,9 @@ down_app: ## Down app
 	docker-compose -f ./docker/docker-compose.yml --env-file ./docker/.env down -v
 
 lint: ## Run linter
+	clear && echo "Start lint"
 	$(PROJECT_BIN)/golangci-lint run -c .golangci.yml
+	echo "Finish lint"
 
 # Global
 .DEFAULT_GOAL := help
