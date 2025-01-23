@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/mar4ehk0/notes/model"
 	"github.com/mar4ehk0/notes/pkg/dto"
 	"github.com/sirupsen/logrus"
 )
@@ -36,30 +37,12 @@ func (h *Handler) renderNoteList(c *gin.Context) {
 
 func (h *Handler) renderNote(c *gin.Context) {
 	session := sessions.Default(c)
-	userID := c.GetInt(userIDCtx)
-	noteID, err := strconv.Atoi(c.Param("id"))
+	msg := "render note item"
+	note := h.getNote(c, msg)
+
+	tags, err := h.services.Tag.GetTagsByNoteID(note.ID)
 	if err != nil {
-		logrus.Errorf("render note item: atoi: %s", err.Error())
-
-		saveItemToSession(&session, flashError, "Something went wrong")
-		c.Redirect(http.StatusFound, "/workspace/notes")
-		return
-	}
-
-	note, err := h.services.Note.GetNote(userID, noteID)
-	if err != nil {
-		logrus.Errorf("render note item: get note: %s", err.Error())
-
-		checkError(err, c)
-
-		saveItemToSession(&session, flashError, "Something went wrong")
-		c.Redirect(http.StatusFound, "/workspace/notes")
-		return
-	}
-
-	tags, err := h.services.Tag.GetTagsByNoteID(noteID)
-	if err != nil {
-		logrus.Errorf("render note item: get tags by node id: %s", err.Error())
+		logrus.Errorf("%s: get tags by node id: %s", msg, err.Error())
 
 		saveItemToSession(&session, flashError, "Something went wrong")
 		c.Redirect(http.StatusFound, "/workspace/notes")
@@ -129,34 +112,17 @@ func (h *Handler) processFormNoteCreate(c *gin.Context) {
 
 func (h *Handler) renderFormNoteUpdate(c *gin.Context) {
 	session := sessions.Default(c)
-	userID := c.GetInt(userIDCtx)
-	noteID, err := strconv.Atoi(c.Param("id"))
+	msg := "render form note update"
+
+	note := h.getNote(c, msg)
+
+	tags, err := h.services.Tag.GetTagsWithTaggedByNoteID(note.ID)
 	if err != nil {
-		logrus.Errorf("render note item update: atoi: %s", err.Error())
+		logrus.Errorf("%s: get tags with tagged by note id: %s", msg, err.Error())
 
 		saveItemToSession(&session, flashError, "Something went wrong")
 		c.Redirect(http.StatusFound, "/workspace/notes")
-		return
-	}
-
-	note, err := h.services.Note.GetNote(userID, noteID)
-	if err != nil {
-		logrus.Errorf("render note update: get note: %s", err.Error())
-
-		checkError(err, c)
-
-		saveItemToSession(&session, flashError, "Something went wrong")
-		c.Redirect(http.StatusFound, "/workspace/notes")
-		return
-	}
-
-	tags, err := h.services.Tag.GetTagsWithTaggedByNoteID(noteID)
-	if err != nil {
-		logrus.Errorf("render form note update: get tags with tagged by note id: %s", err.Error())
-
-		saveItemToSession(&session, flashError, "Something went wrong")
-		c.Redirect(http.StatusFound, "/workspace/notes")
-		return
+		c.Abort()
 	}
 
 	errMsg := getItemFromSession(&session, flashError)
@@ -253,4 +219,30 @@ func (h *Handler) processNoteDelete(c *gin.Context) {
 
 	saveItemToSession(&session, flashInfo, fmt.Sprintf("note: %d was delete", noteID))
 	c.Redirect(http.StatusFound, "/workspace/notes")
+}
+
+func (h *Handler) getNote(c *gin.Context, msg string) model.Note {
+	session := sessions.Default(c)
+	userID := c.GetInt(userIDCtx)
+	noteID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		logrus.Errorf("%s: atoi: %s", msg, err.Error())
+
+		saveItemToSession(&session, flashError, "Something went wrong")
+		c.Redirect(http.StatusFound, "/workspace/notes")
+		c.Abort()
+	}
+
+	note, err := h.services.Note.GetNote(userID, noteID)
+	if err != nil {
+		logrus.Errorf("%s: get note: %s", msg, err.Error())
+
+		checkError(err, c)
+
+		saveItemToSession(&session, flashError, "Something went wrong")
+		c.Redirect(http.StatusFound, "/workspace/notes")
+		c.Abort()
+	}
+
+	return note
 }

@@ -15,9 +15,7 @@ const (
 	tagsNotesTable = "tags_notes"
 )
 
-var (
-	ErrDBDuplicateKey = errors.New("duplicate value for unique index")
-)
+var ErrDBDuplicateKey = errors.New("duplicate value for unique index")
 
 type ConfigPostgres struct {
 	Host     string
@@ -33,8 +31,8 @@ func NewPostgresDB(c ConfigPostgres) (*sqlx.DB, error) {
 		"host=%s port=%s user=%s dbname=%s sslmode=%s password=%s",
 		c.Host, c.Port, c.Username, c.DBName, c.SSLMode, c.Password,
 	)
-	sqlxDB, err := sqlx.Connect("pgx", dsn)
 
+	sqlxDB, err := sqlx.Connect("pgx", dsn)
 	if err != nil {
 		return nil, err
 	}

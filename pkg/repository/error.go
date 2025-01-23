@@ -7,8 +7,8 @@ type NotFoundError struct {
 	ID     int
 }
 
-func NewNotFoundError(e string, ID int) *NotFoundError {
-	return &NotFoundError{Entity: e, ID: ID}
+func NewNotFoundError(e string, id int) *NotFoundError {
+	return &NotFoundError{Entity: e, ID: id}
 }
 
 func (err NotFoundError) Error() string {
