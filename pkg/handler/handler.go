@@ -22,24 +22,6 @@ const (
 	authenticated = "authenticated"
 	sessionName   = "mysession"
 	userIDCtx     = "userId"
-
-	prefixUrlAuth = "/auth"
-	signIn        = "/sign-in"
-	urlSignIn     = prefixUrlAuth + signIn
-	signUp        = "/sign-up"
-	urlSignUp     = prefixUrlAuth + signUp
-
-	prefixUrlWorkspace = "/workspace"
-	notes              = "/notes"
-	urlNotes           = prefixUrlWorkspace + notes
-	notesCreate        = "/notes/create"
-	urlNotesCreate     = prefixUrlWorkspace + notesCreate
-	notesID            = "/notes/:id"
-	urlNotesID         = prefixUrlWorkspace + notesID
-	notesIDUpdate      = notesID + "/update"
-	urlNotesIDUpdate   = prefixUrlWorkspace + notesIDUpdate
-	notesIDDelete      = notesID + "/delete"
-	urlNotesIDDelete   = prefixUrlWorkspace + notesIDDelete
 )
 
 func New(router *gin.Engine, service *service.Service) *Handler {
@@ -60,26 +42,26 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	h.router.GET("/403", h.render403)
 	h.router.GET("/404", h.render404)
 
-	auth := h.router.Group(prefixUrlAuth)
+	auth := h.router.Group("/auth")
 	{
-		auth.GET(signIn, h.renderFormSignIn)
-		auth.POST(signIn, h.processFormSignIn)
+		auth.GET("/sign-in", h.renderFormSignIn)
+		auth.POST("/sign-in", h.processFormSignIn)
 
-		auth.GET(signUp, h.renderFormSignUp)
-		auth.POST(signUp, h.processFormSignUp)
+		auth.GET("/sign-up", h.renderFormSignUp)
+		auth.POST("/sign-up", h.processFormSignUp)
 	}
 
-	workspace := h.router.Group(prefixUrlWorkspace)
+	workspace := h.router.Group("/workspace")
 	workspace.Use(AuthRequired)
 	{
-		workspace.GET(notes, h.renderNoteList)
-		workspace.GET(notesCreate, h.renderFormNoteCreate)
-		workspace.POST(notes, h.processFormNoteCreate)
-		workspace.GET(notesID, h.renderNote)
-		workspace.GET(notesIDUpdate, h.renderFormNoteUpdate)
-		workspace.POST(notesID, h.processFormNoteUpdate)
-		workspace.GET(notesIDDelete, h.renderNoteDelete)
-		workspace.POST(notesIDDelete, h.processNoteDelete)
+		workspace.GET("/notes", h.renderNoteList)
+		workspace.GET("/notes/create", h.renderFormNoteCreate)
+		workspace.POST("/notes", h.processFormNoteCreate)
+		workspace.GET("/notes/:id", h.renderNote)
+		workspace.GET("/notes/:id/update", h.renderFormNoteUpdate)
+		workspace.POST("/notes/:id", h.processFormNoteUpdate)
+		workspace.GET("/notes/:id/delete", h.renderNoteDelete)
+		workspace.POST("/notes/:id/delete", h.processNoteDelete)
 	}
 	return h.router
 }
@@ -96,28 +78,21 @@ func AuthRequired(c *gin.Context) {
 	c.Next()
 }
 
-func (h *Handler) getParamInt(key string, c *gin.Context) int {
-	session := sessions.Default(c)
-	param, err := strconv.Atoi(c.Param(key))
+func (h *Handler) getParamIDInt(c *gin.Context) int {
+	param, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		logrus.Errorf("atoi: %s", err.Error())
 
-		saveItemToSession(&session, flashError, "Something went wrong")
+		h.saveItemToSession(c, flashError, "Something went wrong")
 		c.Redirect(http.StatusFound, "/workspace/notes")
-		c.Abort()
+		return -1
 	}
 
 	return param
 }
 
-func (h *Handler) RedirectAndAbort(c *gin.Context, url string) {
-	logrus.Printf("%p", c)
-	c.Redirect(http.StatusFound, url)
-	c.Abort()
-}
-
-func getItemFromSession(s *sessions.Session, key string) interface{} {
-	session := *s
+func (h *Handler) getItemFromSession(c *gin.Context, key string) interface{} {
+	session := sessions.Default(c)
 
 	value := session.Get(key)
 	session.Delete(key)
@@ -128,8 +103,8 @@ func getItemFromSession(s *sessions.Session, key string) interface{} {
 	return value
 }
 
-func saveItemToSession(s *sessions.Session, key string, value interface{}) {
-	session := *s
+func (h *Handler) saveItemToSession(c *gin.Context, key string, value interface{}) {
+	session := sessions.Default(c)
 
 	session.Set(key, value)
 	if err := session.Save(); err != nil {

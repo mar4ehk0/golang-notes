@@ -17,10 +17,8 @@ const (
 )
 
 func (h *Handler) renderFormSignUp(c *gin.Context) {
-	session := sessions.Default(c)
-
-	errMsg := getItemFromSession(&session, flashError)
-	infoMsg := getItemFromSession(&session, flashInfo)
+	errMsg := h.getItemFromSession(c, flashError)
+	infoMsg := h.getItemFromSession(c, flashInfo)
 
 	c.HTML(http.StatusOK, "auth/sign_up.tmpl", gin.H{
 		"Error": errMsg,
@@ -29,19 +27,18 @@ func (h *Handler) renderFormSignUp(c *gin.Context) {
 }
 
 func (h *Handler) processFormSignUp(c *gin.Context) {
-	session := sessions.Default(c)
-	urlRedirect := urlSignUp
+	urlRedirect := "/auth/sign-up"
 	var input dto.UserSingUpDto
 
 	if err := c.ShouldBind(&input); err != nil {
-		saveItemToSession(&session, flashError, "All fields are required.")
+		h.saveItemToSession(c, flashError, "All fields are required.")
 		c.Redirect(http.StatusFound, urlRedirect)
 		return
 	}
 
 	err := input.Validate()
 	if err != nil {
-		saveItemToSession(&session, flashError, err.Error())
+		h.saveItemToSession(c, flashError, err.Error())
 		c.Redirect(http.StatusFound, urlRedirect)
 		return
 	}
@@ -55,21 +52,21 @@ func (h *Handler) processFormSignUp(c *gin.Context) {
 			msg = fmt.Sprintf("User already exist with same email: %s", input.Email)
 		}
 
-		saveItemToSession(&session, flashError, msg)
+		h.saveItemToSession(c, flashError, msg)
 		c.Redirect(http.StatusFound, urlRedirect)
 		return
 	}
 
-	saveItemToSession(&session, flashInfo, fmt.Sprintf("User created: %s", user.Email))
-	c.Redirect(http.StatusFound, urlSignIn)
+	h.saveItemToSession(c, flashInfo, fmt.Sprintf("User created: %s", user.Email))
+	c.Redirect(http.StatusFound, "/auth/sign-in")
 }
 
 func (h *Handler) renderFormSignIn(c *gin.Context) {
-	session := sessions.Default(c)
+	// session := sessions.Default(c)
 
-	errMsg := getItemFromSession(&session, flashError)
-	infoMsg := getItemFromSession(&session, flashInfo)
-	email := getItemFromSession(&session, emailFormSignIn)
+	errMsg := h.getItemFromSession(c, flashError)
+	infoMsg := h.getItemFromSession(c, flashInfo)
+	email := h.getItemFromSession(c, emailFormSignIn)
 
 	c.HTML(http.StatusOK, "auth/sign_in.tmpl", gin.H{
 		"Error": errMsg,
@@ -80,11 +77,11 @@ func (h *Handler) renderFormSignIn(c *gin.Context) {
 
 func (h *Handler) processFormSignIn(c *gin.Context) {
 	session := sessions.Default(c)
-	urlRedirect := urlSignUp
+	urlRedirect := "/auth/sign-up"
 	var input dto.UserSingInDto
 
 	if err := c.ShouldBind(&input); err != nil {
-		saveItemToSession(&session, flashError, "Email and Password are required")
+		h.saveItemToSession(c, flashError, "Email and Password are required")
 		c.Redirect(http.StatusFound, urlRedirect)
 		return
 	}
@@ -93,13 +90,13 @@ func (h *Handler) processFormSignIn(c *gin.Context) {
 	if err != nil {
 		logrus.Errorf("process form sign-in: can authorize: %s", err.Error())
 
-		saveItemToSession(&session, flashError, "Something went wrong")
+		h.saveItemToSession(c, flashError, "Something went wrong")
 		c.Redirect(http.StatusFound, urlRedirect)
 		return
 	}
 
 	if !canAuthorize {
-		saveItemToSession(&session, flashError, "Email or password wrong")
+		h.saveItemToSession(c, flashError, "Email or password wrong")
 		c.Redirect(http.StatusFound, urlRedirect)
 		return
 	}
@@ -108,10 +105,10 @@ func (h *Handler) processFormSignIn(c *gin.Context) {
 	if err := session.Save(); err != nil {
 		logrus.Errorf("process form sign-in: save session: %s", err.Error())
 
-		saveItemToSession(&session, flashError, "Something went wrong")
+		h.saveItemToSession(c, flashError, "Something went wrong")
 		c.Redirect(http.StatusFound, urlRedirect)
 		return
 	}
 
-	c.Redirect(http.StatusFound, urlNotes)
+	c.Redirect(http.StatusFound, "/workspace/notes/create")
 }

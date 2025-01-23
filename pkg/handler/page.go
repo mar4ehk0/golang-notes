@@ -3,7 +3,6 @@ package handler
 import (
 	"net/http"
 
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,8 +15,7 @@ func (h *Handler) render403(c *gin.Context) {
 }
 
 func (h *Handler) render404(c *gin.Context) {
-	session := sessions.Default(c)
-	info := getItemFromSession(&session, flashError)
+	info := h.getItemFromSession(c, flashError)
 
 	c.HTML(http.StatusOK, "page/404.tmpl", gin.H{
 		"Info": info,
