@@ -79,7 +79,7 @@ func (h *Handler) renderFormNoteCreate(c *gin.Context) {
 }
 
 func (h *Handler) processFormNoteCreate(c *gin.Context) {
-	userID := c.GetInt(userIDCtx)
+	userId := c.GetInt(userIDCtx)
 
 	var input dto.NoteDto
 
@@ -91,7 +91,7 @@ func (h *Handler) processFormNoteCreate(c *gin.Context) {
 		return
 	}
 
-	noteID, err := h.services.Note.CreateNote(userID, input)
+	noteID, err := h.services.Note.CreateNote(userId, input)
 	if err != nil {
 		logrus.Errorf("process form note create: create note: %s", err.Error())
 
