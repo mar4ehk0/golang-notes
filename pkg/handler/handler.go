@@ -22,6 +22,24 @@ const (
 	authenticated = "authenticated"
 	sessionName   = "mysession"
 	userIDCtx     = "userId"
+
+	prefixUrlAuth = "/auth"
+	signIn        = "/sign-in"
+	urlSignIn     = prefixUrlAuth + signIn
+	signUp        = "/sign-up"
+	urlSignUp     = prefixUrlAuth + signUp
+
+	prefixUrlWorkspace = "/workspace"
+	notes              = "/notes"
+	urlNotes           = prefixUrlWorkspace + notes
+	notesCreate        = "/notes/create"
+	urlNotesCreate     = prefixUrlWorkspace + notesCreate
+	notesID            = "/notes/:id"
+	urlNotesID         = prefixUrlWorkspace + notesID
+	notesIDUpdate      = notesID + "/update"
+	urlNotesIDUpdate   = prefixUrlWorkspace + notesIDUpdate
+	notesIDDelete      = notesID + "/delete"
+	urlNotesIDDelete   = prefixUrlWorkspace + notesIDDelete
 )
 
 func New(router *gin.Engine, service *service.Service) *Handler {
@@ -42,26 +60,26 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	h.router.GET("/403", h.render403)
 	h.router.GET("/404", h.render404)
 
-	auth := h.router.Group("/auth")
+	auth := h.router.Group(prefixUrlAuth)
 	{
-		auth.GET("/sign-in", h.renderFormSignIn)
-		auth.POST("/sign-in", h.processFormSignIn)
+		auth.GET(signIn, h.renderFormSignIn)
+		auth.POST(signIn, h.processFormSignIn)
 
-		auth.GET("/sign-up", h.renderFormSignUp)
-		auth.POST("/sign-up", h.processFormSignUp)
+		auth.GET(signUp, h.renderFormSignUp)
+		auth.POST(signUp, h.processFormSignUp)
 	}
 
-	workspace := h.router.Group("/workspace")
+	workspace := h.router.Group(prefixUrlWorkspace)
 	workspace.Use(AuthRequired)
 	{
-		workspace.GET("/notes", h.renderNoteList)
-		workspace.GET("/notes/create", h.renderFormNoteCreate)
-		workspace.POST("/notes", h.processFormNoteCreate)
-		workspace.GET("/notes/:id", h.renderNote)
-		workspace.GET("/notes/:id/update", h.renderFormNoteUpdate)
-		workspace.POST("/notes/:id", h.processFormNoteUpdate)
-		workspace.GET("/notes/:id/delete", h.renderNoteDelete)
-		workspace.POST("/notes/:id/delete", h.processNoteDelete)
+		workspace.GET(notes, h.renderNoteList)
+		workspace.GET(notesCreate, h.renderFormNoteCreate)
+		workspace.POST(notes, h.processFormNoteCreate)
+		workspace.GET(notesID, h.renderNote)
+		workspace.GET(notesIDUpdate, h.renderFormNoteUpdate)
+		workspace.POST(notesID, h.processFormNoteUpdate)
+		workspace.GET(notesIDDelete, h.renderNoteDelete)
+		workspace.POST(notesIDDelete, h.processNoteDelete)
 	}
 	return h.router
 }
@@ -90,6 +108,12 @@ func (h *Handler) getParamInt(key string, c *gin.Context) int {
 	}
 
 	return param
+}
+
+func (h *Handler) RedirectAndAbort(c *gin.Context, url string) {
+	logrus.Printf("%p", c)
+	c.Redirect(http.StatusFound, url)
+	c.Abort()
 }
 
 func getItemFromSession(s *sessions.Session, key string) interface{} {
