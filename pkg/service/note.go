@@ -16,17 +16,17 @@ func NewNoteService(repo repository.Note) *NoteService {
 	return &NoteService{repo: repo}
 }
 
-func (s *NoteService) CreateNote(userId int, input dto.NoteDto) (int, error) {
+func (s *NoteService) CreateNote(userID int, input dto.NoteDto) (int, error) {
 	var noteID int
 	var err error
 
 	if len(input.TagsID) > 0 {
-		noteID, err = s.repo.AddNoteWithTag(userId, input)
+		noteID, err = s.repo.AddNoteWithTag(userID, input)
 		if err != nil {
 			return 0, fmt.Errorf("repo add note with tag: %w", err)
 		}
 	} else {
-		noteID, err = s.repo.AddNote(userId, input)
+		noteID, err = s.repo.AddNote(userID, input)
 		if err != nil {
 			return 0, fmt.Errorf("repo add note: %w", err)
 		}
@@ -35,20 +35,20 @@ func (s *NoteService) CreateNote(userId int, input dto.NoteDto) (int, error) {
 	return noteID, nil
 }
 
-func (s *NoteService) GetNote(userId int, noteId int) (model.Note, error) {
-	note, err := s.repo.GetNoteByID(noteId)
+func (s *NoteService) GetNote(userID int, noteID int) (model.Note, error) {
+	note, err := s.repo.GetNoteByID(noteID)
 	if err != nil {
-		return model.Note{}, fmt.Errorf("repo get note by noteID{%v}: %w", noteId, err)
+		return model.Note{}, fmt.Errorf("repo get note by noteID{%v}: %w", noteID, err)
 	}
-	if note.UserID != userId {
-		return model.Note{}, NewForbiddenError(userId, noteId)
+	if note.UserID != userID {
+		return model.Note{}, NewForbiddenError(userID, noteID)
 	}
 
 	return note, nil
 }
 
-func (s *NoteService) GetNotes(userId int) ([]model.Note, error) {
-	notes, err := s.repo.GetNotesByUserId(userId)
+func (s *NoteService) GetNotes(userID int) ([]model.Note, error) {
+	notes, err := s.repo.GetNotesByUserID(userID)
 	if err != nil {
 		return make([]model.Note, 0), fmt.Errorf("repo get notes by userID: %w", err)
 	}

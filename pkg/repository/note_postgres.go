@@ -20,7 +20,7 @@ func NewNotePostgres(db *sqlx.DB) *NotePostgres {
 	return &NotePostgres{db: db}
 }
 
-func (r *NotePostgres) AddNoteWithTag(userId int, input dto.NoteDto) (int, error) {
+func (r *NotePostgres) AddNoteWithTag(userID int, input dto.NoteDto) (int, error) {
 	var err error
 
 	tx, err := r.db.Begin()
@@ -43,10 +43,10 @@ func (r *NotePostgres) AddNoteWithTag(userId int, input dto.NoteDto) (int, error
 	var noteID int
 
 	query := fmt.Sprintf("INSERT INTO %s (title, body, user_id) VALUES ($1, $2, $3) RETURNING id", notesTable)
-	row := tx.QueryRow(query, input.Title, input.Body, userId)
+	row := tx.QueryRow(query, input.Title, input.Body, userID)
 	err = row.Scan(&noteID)
 	if err != nil {
-		err = fmt.Errorf("scan id {%d %v}: %w", userId, input, err)
+		err = fmt.Errorf("scan id {%d %v}: %w", userID, input, err)
 		return 0, err
 	}
 
@@ -58,36 +58,36 @@ func (r *NotePostgres) AddNoteWithTag(userId int, input dto.NoteDto) (int, error
 	return noteID, nil
 }
 
-func (r *NotePostgres) AddNote(userId int, input dto.NoteDto) (int, error) {
+func (r *NotePostgres) AddNote(userID int, input dto.NoteDto) (int, error) {
 	var id int
 
 	query := fmt.Sprintf("INSERT INTO %s (title, body, user_id) VALUES ($1, $2, $3) RETURNING id", notesTable)
-	row := r.db.QueryRow(query, input.Title, input.Body, userId)
+	row := r.db.QueryRow(query, input.Title, input.Body, userID)
 
 	err := row.Scan(&id)
 	if err != nil {
-		return 0, fmt.Errorf("scan id {%d %v}: %w", userId, input, err)
+		return 0, fmt.Errorf("scan id {%d %v}: %w", userID, input, err)
 	}
 
 	return id, nil
 }
 
-func (r *NotePostgres) GetNoteByID(noteId int) (model.Note, error) {
+func (r *NotePostgres) GetNoteByID(noteID int) (model.Note, error) {
 	var note model.Note
 
 	query := fmt.Sprintf("SELECT id, title, body, user_id FROM %s WHERE id=$1", notesTable)
-	err := r.db.QueryRowx(query, noteId).StructScan(&note)
+	err := r.db.QueryRowx(query, noteID).StructScan(&note)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return note, NewNotFoundError("note", noteId)
+			return note, NewNotFoundError("note", noteID)
 		}
-		return note, fmt.Errorf("struct scan {%v}: %w", noteId, err)
+		return note, fmt.Errorf("struct scan {%v}: %w", noteID, err)
 	}
 
 	return note, nil
 }
 
-func (r *NotePostgres) GetNotesByUserId(userID int) ([]model.Note, error) {
+func (r *NotePostgres) GetNotesByUserID(userID int) ([]model.Note, error) {
 	notes := []model.Note{}
 
 	query := fmt.Sprintf("SELECT id, title, body, user_id FROM %s WHERE user_id=$1", notesTable)

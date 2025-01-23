@@ -13,7 +13,7 @@ type Authorization interface {
 
 type Note interface {
 	CreateNote(userID int, input dto.NoteDto) (int, error)
-	GetNote(userID int, noteId int) (model.Note, error)
+	GetNote(userID int, noteID int) (model.Note, error)
 	GetNotes(userID int) ([]model.Note, error)
 	UpdateNote(userID int, noteID int, input dto.NoteDto) error
 	DeleteNote(userID int, noteID int) error
