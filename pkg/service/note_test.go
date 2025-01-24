@@ -355,13 +355,13 @@ func TestFailDeleteNoteForbiddenError(t *testing.T) {
 	noteService := NewNoteService(mockRepo)
 
 	userID := 1
-	otherUserId := 2
+	otherUserID := 2
 	noteID := 1
 	value := model.Note{
 		ID:     noteID,
 		Title:  "lorem",
 		Body:   "ipsum",
-		UserID: otherUserId,
+		UserID: otherUserID,
 	}
 
 	mockRepo.EXPECT().
