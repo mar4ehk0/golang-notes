@@ -65,16 +65,9 @@ func (s *NoteService) UpdateNote(userID int, noteID int, input dto.NoteDto) erro
 		return NewForbiddenError(userID, noteID)
 	}
 
-	if len(input.TagsID) > 0 {
-		err = s.repo.UpdateNoteWithTag(noteID, input)
-		if err != nil {
-			return fmt.Errorf("repo update note with tag: %w", err)
-		}
-	} else {
-		err = s.repo.UpdateNote(noteID, input)
-		if err != nil {
-			return fmt.Errorf("repo update note by noteID{%v}: %w", noteID, err)
-		}
+	err = s.repo.UpdateNote(noteID, input)
+	if err != nil {
+		return fmt.Errorf("repo update note noteID{%v}: %w", noteID, err)
 	}
 
 	return nil
