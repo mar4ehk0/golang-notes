@@ -100,16 +100,6 @@ func (r *NotePostgres) GetNotesByUserID(userID int) ([]model.Note, error) {
 }
 
 func (r *NotePostgres) UpdateNote(noteID int, d dto.NoteDto) error {
-	query := fmt.Sprintf("UPDATE %s SET title=$1, body=$2 WHERE id=$3", notesTable)
-	_, err := r.db.Exec(query, d.Title, d.Body, noteID)
-	if err != nil {
-		return fmt.Errorf("exec: %w", err)
-	}
-
-	return nil
-}
-
-func (r *NotePostgres) UpdateNoteWithTag(noteID int, d dto.NoteDto) error {
 	tx, err := r.db.Begin()
 	if err != nil {
 		return fmt.Errorf("begin transaction {%v}: %w", d, err)
@@ -135,6 +125,13 @@ func (r *NotePostgres) UpdateNoteWithTag(noteID int, d dto.NoteDto) error {
 
 	query = fmt.Sprintf("DELETE FROM %s WHERE note_id=$1", tagsNotesTable)
 	_, err = tx.Exec(query, noteID)
+	if err != nil {
+		return fmt.Errorf("delete %s exec: %w", tagsNotesTable, err)
+	}
+
+	if len(d.TagsID) == 0 {
+		return nil
+	}
 
 	err = r.addTagNoteTx(tx, d.TagsID, noteID)
 	if err != nil {
@@ -145,15 +142,38 @@ func (r *NotePostgres) UpdateNoteWithTag(noteID int, d dto.NoteDto) error {
 }
 
 func (r *NotePostgres) DeleteNote(noteID int) (bool, error) {
-	query := fmt.Sprintf("DELETE FROM %s WHERE id=$1", notesTable)
-	result, err := r.db.Exec(query, noteID)
+	tx, err := r.db.Begin()
 	if err != nil {
-		return false, fmt.Errorf("exec: %w", err)
+		return false, fmt.Errorf("begin transaction noteID{%v}: %w", noteID, err)
+	}
+	defer func() {
+		if err != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				logrus.Errorf("transaction rollback error: %v", rbErr)
+			}
+		} else {
+			if cmtErr := tx.Commit(); cmtErr != nil {
+				logrus.Errorf("transaction commit error: %v", cmtErr)
+				err = cmtErr
+			}
+		}
+	}()
+
+	query := fmt.Sprintf("DELETE FROM %s WHERE id=$1", notesTable)
+	result, err := tx.Exec(query, noteID)
+	if err != nil {
+		return false, fmt.Errorf("delete %s exec: %w", notesTable, err)
 	}
 
 	countDeleted, err := result.RowsAffected()
 	if err != nil {
 		return false, fmt.Errorf("get rows affected: %w", err)
+	}
+
+	query = fmt.Sprintf("DELETE FROM %s WHERE note_id=$1", tagsNotesTable)
+	_, err = tx.Exec(query, noteID)
+	if err != nil {
+		return false, fmt.Errorf("delete %s exec: %w", tagsNotesTable, err)
 	}
 
 	return countDeleted > 0, nil
