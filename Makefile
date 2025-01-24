@@ -27,6 +27,7 @@ install_deps: ## Setup install deps
 	mv /tmp/golang-migrate-4.18.1/migrate ${PROJECT_DIR}/bin && rm -rf /tmp/golang-migrate-4.18.1 && rm -rf /tmp/migrate.linux-amd64.tar.gz 
 	# setup golangci-lint 
 	GOBIN=$(PROJECT_BIN) GOTOOLCHAIN=go1.23.4 go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.63.4
+	GOBIN=$(PROJECT_BIN) GOTOOLCHAIN=go1.23.4 go install go.uber.org/mock/mockgen@latest
 
 migration_create: ## Migration Create name=migration_name
 	$(PROJECT_BIN)/migrate create -ext sql -dir ${MIGRATION_DIR} ${name}
