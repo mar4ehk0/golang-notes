@@ -1,4 +1,4 @@
-![GoLint](https://github.com/mar4ehk0/golang-notes/actions/workflows/linter.yml/badge.svg?branch=master)
+![GoLint](https://github.com/mar4ehk0/golang-notes/actions/workflows/linter.yml/badge.svg?branch=master) ![Tests](https://github.com/mar4ehk0/golang-notes/actions/workflows/tests.yml/badge.svg?branch=master)
 
 # "Заметки"
 Веб-приложение для управления заметками. Пользователь может создавать, просматривать, обновлять и удалять заметки. Для заметок можно добавлять теги срока давности.
