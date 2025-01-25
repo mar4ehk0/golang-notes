@@ -1,4 +1,4 @@
-name: GoLint
+name: Builder
 
 on:
   push:
