@@ -62,8 +62,6 @@ func (h *Handler) processFormSignUp(c *gin.Context) {
 }
 
 func (h *Handler) renderFormSignIn(c *gin.Context) {
-	// session := sessions.Default(c)
-
 	errMsg := h.getItemFromSession(c, flashError)
 	infoMsg := h.getItemFromSession(c, flashInfo)
 	email := h.getItemFromSession(c, emailFormSignIn)
