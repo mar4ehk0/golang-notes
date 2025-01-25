@@ -49,6 +49,8 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 		auth.GET("/sign-up", h.renderFormSignUp)
 		auth.POST("/sign-up", h.processFormSignUp)
+
+		auth.GET("/logout", h.logout)
 	}
 
 	workspace := h.router.Group("/workspace")
@@ -109,5 +111,14 @@ func (h *Handler) saveItemToSession(c *gin.Context, key string, value interface{
 	session.Set(key, value)
 	if err := session.Save(); err != nil {
 		logrus.Errorf("failed save session: %s", err.Error())
+	}
+}
+
+func (h *Handler) deleteItemFormSession(c *gin.Context, key string) {
+	session := sessions.Default(c)
+
+	session.Delete(key)
+	if err := session.Save(); err != nil {
+		logrus.Errorf("failed delete session: %s", err.Error())
 	}
 }

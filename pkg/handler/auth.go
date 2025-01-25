@@ -110,3 +110,9 @@ func (h *Handler) processFormSignIn(c *gin.Context) {
 
 	c.Redirect(http.StatusFound, "/workspace/notes/create")
 }
+
+func (h *Handler) logout(c *gin.Context) {
+	h.deleteItemFormSession(c, authenticated)
+
+	c.Redirect(http.StatusFound, "/")
+}
