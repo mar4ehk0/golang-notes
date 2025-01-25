@@ -30,12 +30,13 @@ jobs:
 
         - name: Archive files
           run: |
+            mkdir -p buf
             mkdir -p dist
-            cp notes_webserver dist/
-            cp -r templates dist/
-            cp -r static dist/
-            cp .env.example dist/
-            tar -czvf dist/notes_webserver.tar.gz -C dist .            
+            cp notes_webserver buf/
+            cp -r templates buf/
+            cp -r static buf/
+            cp .env.example buf/
+            tar -czvf dist/notes_webserver.tar.gz buf           
 
         - name: Upload artifact
           uses: actions/upload-artifact@v3
