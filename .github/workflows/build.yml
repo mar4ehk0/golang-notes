@@ -40,6 +40,5 @@ jobs:
         - name: Upload artifact
           uses: actions/upload-artifact@v3
           with:
-          with:
             name: notes_webserver
             path: dist/notes_webserver.tar.gz
