@@ -3,7 +3,7 @@ name: GoLint
 on:
   push:
     branches:
-      - 'main'
+      - 'master'
 
 jobs:
   lint:
