@@ -29,7 +29,7 @@ jobs:
             CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o notes_webserver ./cmd/main.go
 
         - name: Archive files
-        run: |
+          run: |
             mkdir -p dist
             cp notes_webserver dist/
             cp -r templates dist/
@@ -38,7 +38,8 @@ jobs:
             tar -czvf dist/notes_webserver.tar.gz -C dist .            
 
         - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
+          uses: actions/upload-artifact@v3
+          with:
+          with:
             name: notes_webserver
             path: dist/notes_webserver.tar.gz
