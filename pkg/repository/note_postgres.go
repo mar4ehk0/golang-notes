@@ -159,7 +159,15 @@ func (r *NotePostgres) DeleteNote(noteID int) (bool, error) {
 		}
 	}()
 
-	query := fmt.Sprintf("DELETE FROM %s WHERE id=$1", notesTable)
+	var query string
+
+	query = fmt.Sprintf("DELETE FROM %s WHERE note_id=$1", tagsNotesTable)
+	_, err = tx.Exec(query, noteID)
+	if err != nil {
+		return false, fmt.Errorf("delete %s exec: %w", tagsNotesTable, err)
+	}
+
+	query = fmt.Sprintf("DELETE FROM %s WHERE id=$1", notesTable)
 	result, err := tx.Exec(query, noteID)
 	if err != nil {
 		return false, fmt.Errorf("delete %s exec: %w", notesTable, err)
@@ -168,12 +176,6 @@ func (r *NotePostgres) DeleteNote(noteID int) (bool, error) {
 	countDeleted, err := result.RowsAffected()
 	if err != nil {
 		return false, fmt.Errorf("get rows affected: %w", err)
-	}
-
-	query = fmt.Sprintf("DELETE FROM %s WHERE note_id=$1", tagsNotesTable)
-	_, err = tx.Exec(query, noteID)
-	if err != nil {
-		return false, fmt.Errorf("delete %s exec: %w", tagsNotesTable, err)
 	}
 
 	return countDeleted > 0, nil
