@@ -44,13 +44,15 @@ migration_force: ## Migration Force version=20250120130543
 migration_version: ## Migration Version
 	$(PROJECT_BIN)/migrate -path ${MIGRATION_DIR} -database ${MIGRATION_DSN} version
 
-build_app: ## Build app
-	docker-compose -f ./docker/docker-compose.yml --env-file ./docker/.env build
+run_app_dev: ## Run app for development
+	docker-compose -f ./docker/docker-compose-dev.yml --env-file ./docker/.env up -d
+	go run cmd/main.go
 
 run_app: ## Run app
-	docker-compose -f ./docker/docker-compose.yml --env-file ./docker/.env up -d
+	docker-compose -f ./docker/docker-compose.yml --env-file ./docker/.env build
+	docker-compose -f ./docker/docker-compose.yml --env-file ./docker/.env up
 
-down_app: ## Down app
+stop_app: ## Stop app
 	docker-compose -f ./docker/docker-compose.yml --env-file ./docker/.env down -v
 
 lint: ## Run linter
